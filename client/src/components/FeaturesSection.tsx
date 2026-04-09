@@ -55,10 +55,17 @@ const features = [
 import { useMemo } from "react";
 import CircularGallery from "./CircularGallery";
 
+// Reusable offscreen canvas — avoids creating and GC-ing 8 canvases on every call
+let _sharedCanvas: HTMLCanvasElement | null = null;
+function getSharedCanvas(w: number, h: number) {
+  if (!_sharedCanvas) _sharedCanvas = document.createElement("canvas");
+  _sharedCanvas.width = w;
+  _sharedCanvas.height = h;
+  return _sharedCanvas;
+}
+
 function createFeatureCard(title: string, description: string, faIcon: any) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 800;
-  canvas.height = 1000;
+  const canvas = getSharedCanvas(800, 1000);
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
 
@@ -119,7 +126,8 @@ function createFeatureCard(title: string, description: string, faIcon: any) {
   }
   ctx.fillText(line.trim(), canvas.width / 2, y);
 
-  return canvas.toDataURL("image/png");
+  // Use JPEG at 85% quality instead of PNG — ~60% smaller data URIs for the same visual output
+  return canvas.toDataURL("image/jpeg", 0.85);
 }
 
 const FeaturesSection = () => {

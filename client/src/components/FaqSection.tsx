@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ChevronDown, HelpCircle, Shield, FileText, Cpu, Target } from "lucide-react";
 import BorderGlow from "./BorderGlow";
 
@@ -33,6 +33,11 @@ const faqs = [
 const FaqSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0); // Initialize first open
 
+  // Stable callback — avoids creating a new closure on every render for each FAQ item
+  const handleToggle = useCallback((index: number) => {
+    setOpenIndex(prev => prev === index ? null : index);
+  }, []);
+
   return (
     <section className="relative bg-transparent overflow-hidden pointer-events-none pb-24">
       <div className="relative z-10 w-full max-w-[90%] sm:max-w-md lg:max-w-4xl px-6 md:px-10 pt-32 pb-8 pointer-events-none">
@@ -62,6 +67,7 @@ const FaqSection = () => {
         <div className="max-w-3xl mx-auto flex flex-col gap-4 relative">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
+            const Icon = faq.icon;
 
             return (
               <div
@@ -70,30 +76,30 @@ const FaqSection = () => {
                 style={{ animationDelay: `${0.4 + index * 0.1}s` }}
               >
                 <BorderGlow
-                  className="w-full cursor-pointer transition-all duration-500"
+                  className="w-full cursor-pointer"
                   borderRadius={24}
                 >
                   <div
                     className="relative p-6 md:px-8 md:py-6 bg-black/40 backdrop-blur-md outline-none transition-colors duration-500"
-                    onClick={() => setOpenIndex(isOpen ? null : index)}
+                    onClick={() => handleToggle(index)}
                   >
                     <div className="flex items-center justify-between pointer-events-none gap-6">
                       <div className="flex items-center gap-4">
                         <div className={`hidden sm:flex shrink-0 items-center justify-center w-12 h-12 rounded-xl border transition-colors duration-500 ${isOpen ? "bg-primary/20 border-primary/30 text-primary" : "bg-white/5 border-white/10 text-muted-foreground"}`}>
-                          <faq.icon className="w-5 h-5" />
+                          <Icon className="w-5 h-5" />
                         </div>
                         <h3 className={`text-lg sm:text-xl font-medium transition-colors duration-300 ${isOpen ? "text-primary shadow-primary" : "text-foreground"}`}>
                           {faq.question}
                         </h3>
                       </div>
-                      <div className={`flex shrink-0 items-center justify-center w-10 h-10 rounded-full transition-all duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${isOpen ? "rotate-180 bg-primary text-black" : "bg-white/5 text-muted-foreground"}`}>
+                      <div className={`flex shrink-0 items-center justify-center w-10 h-10 rounded-full transition-[transform,background-color,color] duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${isOpen ? "rotate-180 bg-primary text-black" : "bg-white/5 text-muted-foreground"}`}>
                         <ChevronDown className="w-5 h-5" />
                       </div>
                     </div>
 
                     {/* Expandable Answer using Grid rows animation */}
                     <div
-                      className={`grid transition-all duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${isOpen ? "grid-rows-[1fr] opacity-100 mt-6 md:ml-16" : "grid-rows-[0fr] opacity-0 mt-0 md:ml-16"}`}
+                      className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${isOpen ? "grid-rows-[1fr] opacity-100 mt-6 md:ml-16" : "grid-rows-[0fr] opacity-0 mt-0 md:ml-16"}`}
                     >
                       <div className="overflow-hidden">
                         <p className="text-muted-foreground/90 font-light leading-relaxed pb-2 text-[0.95rem] sm:text-base pr-4">

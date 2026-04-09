@@ -5,6 +5,7 @@
   backdrop-filter: blur(10px);
   --edge-proximity: 0;
   overflow: hidden; /* Contains the glow */
+  will-change: auto; /* Let browser decide — avoids permanent compositor layer overhead */
 }
 
 .border-glow-card .edge-light {
@@ -25,10 +26,12 @@
   );
   transition: opacity 0.3s ease;
   pointer-events: none;
+  /* GPU-accelerate just the opacity change — avoids layout/paint on every frame */
+  will-change: opacity;
   
   /* Masking engine: Hollows out the center so the gradient ONLY paints a rim edge */
   border-radius: var(--border-radius);
-  padding: 3px; 
+  padding: 4px; 
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;

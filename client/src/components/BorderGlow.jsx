@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useMemo } from 'react';
 import './BorderGlow.css';
 
 function parseHSL(hslStr) {
@@ -38,78 +38,85 @@ function easeInCubic(x) { return x * x * x; }
 
 function animateValue({ start = 0, end = 100, duration = 1000, delay = 0, ease = easeOutCubic, onUpdate, onEnd }) {
   const t0 = performance.now() + delay;
+  let rafId;
   function tick() {
     const elapsed = performance.now() - t0;
     const t = Math.min(elapsed / duration, 1);
     onUpdate(start + (end - start) * ease(t));
-    if (t < 1) requestAnimationFrame(tick);
+    if (t < 1) rafId = requestAnimationFrame(tick);
     else if (onEnd) onEnd();
   }
-  setTimeout(() => requestAnimationFrame(tick), delay);
+  setTimeout(() => { rafId = requestAnimationFrame(tick); }, delay);
+  return () => cancelAnimationFrame(rafId);
 }
 
 const BorderGlow = ({
   children,
   className = '',
   edgeSensitivity = 20,
-  glowColor = '142 100 55', // Extreme Bright Neon Green (100% Saturation, 55% Lightness)
+  glowColor = '142 100 60', // Maximum brightness neon green
   backgroundColor = 'rgba(0, 0, 0, 0.65)',
   borderRadius = 24,
   glowRadius = 40,
-  glowIntensity = 2.0, // Doubled base glow light intensity over multiplier
-  coneSpread = 140, // Expanded massively to create a long smooth sweeping tail like the reference
+  glowIntensity = 3.0, // Tripled — unmistakably bright
+  coneSpread = 160, // Wide sweeping tail wrapping most of the card edge
   animated = false,
-  colors = ['#4ade80', '#22c55e', '#86efac'], // Brighter, high-contrast neons
+  colors = ['#86efac', '#4ade80', '#bbf7d0'], // Ultra-bright pastel-neon greens
   fillOpacity = 0.1,
 }) => {
   const cardRef = useRef(null);
-
-  const getCenterOfElement = useCallback((el) => {
-    const { width, height } = el.getBoundingClientRect();
-    return [width / 2, height / 2];
-  }, []);
-
-  const getEdgeProximity = useCallback((el, x, y) => {
-    const [cx, cy] = getCenterOfElement(el);
-    const dx = x - cx;
-    const dy = y - cy;
-    let kx = Infinity;
-    let ky = Infinity;
-    if (dx !== 0) kx = cx / Math.abs(dx);
-    if (dy !== 0) ky = cy / Math.abs(dy);
-    return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
-  }, [getCenterOfElement]);
-
-  const getCursorAngle = useCallback((el, x, y) => {
-    const [cx, cy] = getCenterOfElement(el);
-    const dx = x - cx;
-    const dy = y - cy;
-    if (dx === 0 && dy === 0) return 0;
-    const radians = Math.atan2(dy, dx);
-    let degrees = radians * (180 / Math.PI) + 90;
-    if (degrees < 0) degrees += 360;
-    return degrees;
-  }, [getCenterOfElement]);
+  const rafRef = useRef(null);
 
   const handlePointerMove = useCallback((e) => {
-    const card = cardRef.current;
-    if (!card) return;
+    // Throttle via rAF — prevents multiple style writes per frame
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const card = cardRef.current;
+      if (!card) return;
 
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-    const edge = getEdgeProximity(card, x, y);
-    const angle = getCursorAngle(card, x, y);
+      // Inline edge proximity calculation — avoids repeated getBoundingClientRect calls
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const dx = x - cx;
+      const dy = y - cy;
+      let kx = Infinity;
+      let ky = Infinity;
+      if (dx !== 0) kx = cx / Math.abs(dx);
+      if (dy !== 0) ky = cy / Math.abs(dy);
+      const edge = Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
 
-    card.style.setProperty('--edge-proximity', `${(edge * 100).toFixed(3)}`);
-    card.style.setProperty('--cursor-angle', `${angle.toFixed(3)}deg`);
-  }, [getEdgeProximity, getCursorAngle]);
+      // Inline cursor angle — avoids allocating arrays and extra function calls
+      let degrees = 0;
+      if (dx !== 0 || dy !== 0) {
+        degrees = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+        if (degrees < 0) degrees += 360;
+      }
+
+      card.style.setProperty('--edge-proximity', `${(edge * 100) | 0}`);
+      card.style.setProperty('--cursor-angle', `${degrees | 0}deg`);
+    });
+  }, []);
 
   const handlePointerLeave = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     const card = cardRef.current;
     if (!card) return;
-    card.style.setProperty('--edge-proximity', `0`);
+    card.style.setProperty('--edge-proximity', '0');
+  }, []);
+
+  // Cleanup rAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -120,20 +127,33 @@ const BorderGlow = ({
     card.classList.add('sweep-active');
     card.style.setProperty('--cursor-angle', `${angleStart}deg`);
 
-    animateValue({ duration: 500, onUpdate: v => card.style.setProperty('--edge-proximity', v) });
-    animateValue({ ease: easeInCubic, duration: 1500, end: 50, onUpdate: v => {
+    const cleanups = [];
+    cleanups.push(animateValue({ duration: 500, onUpdate: v => card.style.setProperty('--edge-proximity', v) }));
+    cleanups.push(animateValue({ ease: easeInCubic, duration: 1500, end: 50, onUpdate: v => {
       card.style.setProperty('--cursor-angle', `${(angleEnd - angleStart) * (v / 100) + angleStart}deg`);
-    }});
-    animateValue({ ease: easeOutCubic, delay: 1500, duration: 2250, start: 50, end: 100, onUpdate: v => {
+    }}));
+    cleanups.push(animateValue({ ease: easeOutCubic, delay: 1500, duration: 2250, start: 50, end: 100, onUpdate: v => {
       card.style.setProperty('--cursor-angle', `${(angleEnd - angleStart) * (v / 100) + angleStart}deg`);
-    }});
-    animateValue({ ease: easeInCubic, delay: 2500, duration: 1500, start: 100, end: 0,
+    }}));
+    cleanups.push(animateValue({ ease: easeInCubic, delay: 2500, duration: 1500, start: 100, end: 0,
       onUpdate: v => card.style.setProperty('--edge-proximity', v),
       onEnd: () => card.classList.remove('sweep-active'),
-    });
+    }));
+
+    return () => cleanups.forEach(fn => fn());
   }, [animated]);
 
-  const glowVars = buildGlowVars(glowColor, glowIntensity);
+  // Memoize expensive style object so it's not rebuilt on every render
+  const cardStyle = useMemo(() => ({
+    '--card-bg': backgroundColor,
+    '--edge-sensitivity': edgeSensitivity,
+    '--border-radius': `${borderRadius}px`,
+    '--glow-padding': `${glowRadius}px`,
+    '--cone-spread': coneSpread,
+    '--fill-opacity': fillOpacity,
+    ...buildGlowVars(glowColor, glowIntensity),
+    ...buildGradientVars(colors),
+  }), [backgroundColor, edgeSensitivity, borderRadius, glowRadius, coneSpread, fillOpacity, glowColor, glowIntensity, colors]);
 
   return (
     <div
@@ -141,16 +161,7 @@ const BorderGlow = ({
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       className={`border-glow-card ${className}`}
-      style={{
-        '--card-bg': backgroundColor,
-        '--edge-sensitivity': edgeSensitivity,
-        '--border-radius': `${borderRadius}px`,
-        '--glow-padding': `${glowRadius}px`,
-        '--cone-spread': coneSpread,
-        '--fill-opacity': fillOpacity,
-        ...glowVars,
-        ...buildGradientVars(colors),
-      }}
+      style={cardStyle}
     >
       <span className="edge-light" />
       <div className="border-glow-inner">

@@ -1,19 +1,39 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-const navLinks = ["Features", "How It Works", "FAQ"];
+const navLinks = [
+  { label: "Features", path: "/features" },
+  { label: "How It Works", path: "/how-it-works" },
+  { label: "FAQ", path: "/faq" },
+];
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const rafRef = useRef(null);
+  const lastScrolled = useRef(false);
+
+  // Throttle scroll handler to animation frames — prevents layout thrashing
+  const handleScroll = useCallback(() => {
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const scrolled = window.scrollY > 50;
+      // Only trigger re-render if state actually changed
+      if (scrolled !== lastScrolled.current) {
+        lastScrolled.current = scrolled;
+        setIsScrolled(scrolled);
+      }
+    });
+  }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [handleScroll]);
 
   return (
     <nav
@@ -31,26 +51,21 @@ const Navbar = () => {
 
         {/* Center nav links — hidden on mobile */}
         <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => {
-            let targetPath = "/";
-            if (link === "How It Works") targetPath = "/how-it-works";
-            else if (link === "Features") targetPath = "/features";
-            else if (link === "FAQ") targetPath = "/faq";
-            
-            return (
-              <Link key={link} to={targetPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest">
-                {link}
-              </Link>
-            )
-          })}
+          {navLinks.map((link) => (
+            <Link key={link.label} to={link.path} className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest">
+              {link.label}
+            </Link>
+          ))}
         </div>
 
-        {/* Action Button */}
+        {/* Action Buttons */}
         <div className="flex items-center gap-4">
-          <Button size="sm" variant="ghost" className="hidden sm:flex text-xs tracking-widest font-bold px-4 hover:bg-white/10 hover:text-white transition-colors">
+          <Button size="sm" variant="ghost" className="hidden sm:flex text-xs tracking-widest font-bold px-4 hover:bg-white/10 hover:text-white transition-[background-color,color] duration-200">
+            <i className="fa-solid fa-right-to-bracket mr-2" />
             LOGIN
           </Button>
-          <Button size="sm" className="hidden sm:flex text-xs tracking-widest font-bold px-6 bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/20 shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-all">
+          <Button size="sm" className="hidden sm:flex text-xs tracking-widest font-bold px-6 bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/20 shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-[background-color,box-shadow] duration-200">
+            <i className="fa-solid fa-user-plus mr-2" />
             SIGN UP
           </Button>
         </div>

@@ -58,10 +58,10 @@ const HowItWorksSection = () => {
       <div className="relative z-10 w-full px-6 md:px-10 pointer-events-auto">
         <div className="max-w-5xl mx-auto relative pt-10 pb-20">
           {/* Central line design for timeline look - Desktop */}
-          <div className="hidden md:block absolute left-1/2 top-10 bottom-10 w-[2px] bg-gradient-to-b from-primary via-primary/30 to-transparent -translate-x-1/2 rounded-full" />
+          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-primary to-transparent -translate-x-1/2 rounded-full" />
           
            {/* Left-aligned line for mobile */}
-          <div className="md:hidden absolute left-8 top-10 bottom-10 w-[2px] bg-gradient-to-b from-primary via-primary/30 to-transparent rounded-full" />
+          <div className="md:hidden absolute left-8 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-primary to-transparent rounded-full" />
 
           <div className="flex flex-col gap-12 md:gap-0">
             {steps.map((step, index) => {
@@ -85,8 +85,6 @@ const HowItWorksSection = () => {
                   >
                     <BorderGlow 
                       className={`w-full group ${isEven ? "md:text-right" : "md:text-left"}`}
-                      glowColor="142 71 45"
-                      backgroundColor="rgba(0, 0, 0, 0.4)"
                       borderRadius={24}
                     >
                       <div className="flex flex-col p-8 backdrop-blur-md">
