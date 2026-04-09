@@ -1,0 +1,44 @@
+.border-glow-card {
+  position: relative;
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.02); /* Extremely subtle border when not hovering */
+  backdrop-filter: blur(10px);
+  --edge-proximity: 0;
+  overflow: hidden; /* Contains the glow */
+}
+
+.border-glow-card .edge-light {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: calc(var(--edge-proximity) / 100);
+  background: conic-gradient(
+    from calc(var(--cursor-angle) - 180deg) at 50% 50%,
+    transparent 0%,
+    var(--glow-color-10) calc(var(--cone-spread) * 1deg),
+    var(--glow-color) 180deg,
+    var(--glow-color-10) calc(360deg - (var(--cone-spread) * 1deg)),
+    transparent 360deg
+  );
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  
+  /* Masking engine: Hollows out the center so the gradient ONLY paints a rim edge */
+  border-radius: var(--border-radius);
+  padding: 3px; 
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.border-glow-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--border-radius) - 2px);
+  background: var(--card-bg);
+  z-index: 3;
+}
