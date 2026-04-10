@@ -10,3 +10,5 @@ build/
 
 # Upload directory
 uploads/
+
+*.json
