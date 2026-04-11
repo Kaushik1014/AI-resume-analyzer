@@ -6,6 +6,9 @@ module.exports = {
       fontFamily: {
         sora: ["Sora", "sans-serif"],
         inter: ["Inter", "sans-serif"],
+        schibsted: ["Schibsted Grotesk", "sans-serif"],
+        noto: ["Noto Sans", "sans-serif"],
+        fustat: ["Fustat", "sans-serif"],
       },
       colors: {
         background: "hsl(var(--background))",
