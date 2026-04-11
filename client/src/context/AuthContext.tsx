@@ -121,6 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { user } = await signInWithPopup(auth, googleProvider);
       await syncUser(user);
     } catch (err: any) {
+      console.error("Google login error code:", err.code, "message:", err.message);
       // Don't show error for popup-closed-by-user
       if (err.code !== "auth/popup-closed-by-user") {
         const msg = firebaseErrorMessage(err.code);
@@ -177,8 +178,21 @@ function firebaseErrorMessage(code: string): string {
       return "Sign-in popup was closed.";
     case "auth/network-request-failed":
       return "Network error. Check your connection.";
+    case "auth/unauthorized-domain":
+      return "This domain is not authorized for sign-in. Add it to Firebase Console → Authentication → Settings → Authorized domains.";
+    case "auth/operation-not-allowed":
+      return "Google sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.";
+    case "auth/cancelled-popup-request":
+      return "Another sign-in popup is already open.";
+    case "auth/account-exists-with-different-credential":
+      return "An account already exists with this email using a different sign-in method.";
+    case "auth/popup-blocked":
+      return "Sign-in popup was blocked by the browser. Please allow popups and try again.";
+    case "auth/internal-error":
+      return "An internal authentication error occurred. Please try again.";
     default:
-      return "Authentication failed. Please try again.";
+      console.warn("Unhandled Firebase error code:", code);
+      return `Authentication failed (${code || "unknown"}). Please try again.`;
   }
 }
 
