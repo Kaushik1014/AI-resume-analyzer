@@ -7,6 +7,7 @@ import { readFileSync } from "fs";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth.js";
+import analyzeRoutes from "./routes/analyze.js";
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use("/api/", limiter);
 
 // ─── Routes ───
 app.use("/api/auth", authRoutes);
+app.use("/api/analyze", analyzeRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {

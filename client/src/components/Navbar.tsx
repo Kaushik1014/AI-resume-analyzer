@@ -9,7 +9,7 @@ const navLinks = [
   { label: "FAQ", path: "/faq" },
 ];
 
-const Navbar = () => {
+const Navbar = ({ onNewChat }: { onNewChat?: () => void }) => {
   const { firebaseUser, dbUser, logout } = useAuth();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -77,6 +77,18 @@ const Navbar = () => {
         <div className="flex items-center gap-4">
           {firebaseUser ? (
             <>
+              {/* New Chat Button (Rendered if prop is provided) */}
+              {onNewChat && (
+                <Button
+                  size="sm"
+                  onClick={onNewChat}
+                  className="hidden sm:flex text-xs tracking-widest font-bold px-4 bg-primary/20 text-primary-foreground border border-primary/30 hover:bg-primary/30 transition-[background-color,color] duration-200"
+                >
+                  <i className="fa-solid fa-plus mr-2" />
+                  NEW CHAT
+                </Button>
+              )}
+
               {/* User avatar / initial */}
               <Link to="/dashboard" className="flex items-center gap-3 group">
                 {photoURL ? (
