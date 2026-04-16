@@ -14,13 +14,13 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post("/prompt", authMiddleware, async (req, res) => {
   try {
     const { prompt, historyContext = [] } = req.body;
-    
+
     if (!prompt) {
       return res.status(400).json({ error: "No prompt provided" });
     }
 
     const responseText = await generatePromptResponse(prompt, historyContext);
-    
+
     // Save to history
     await Chat.create({
       firebaseUid: req.user.uid,
@@ -43,7 +43,7 @@ router.get("/history", authMiddleware, async (req, res) => {
     const history = await Chat.find({ firebaseUid: req.user.uid })
       .select("-firebaseUid") // No need to send back uid
       .sort({ createdAt: -1 });
-    
+
     res.json({ history });
   } catch (error) {
     console.error("Error fetching chat history:", error);
@@ -58,11 +58,11 @@ router.delete("/history/:id", authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const deletedChat = await Chat.findOneAndDelete({ _id: id, firebaseUid: req.user.uid });
-    
+
     if (!deletedChat) {
       return res.status(404).json({ error: "Chat not found or unauthorized" });
     }
-    
+
     res.json({ message: "Chat deleted", id });
   } catch (error) {
     console.error("Error deleting chat:", error);
@@ -96,9 +96,9 @@ router.post("/upload", authMiddleware, upload.single("file"), async (req, res) =
     const { prompt, historyContext } = req.body;
     let history = [];
     if (historyContext) {
-      try { history = JSON.parse(historyContext); } catch(e) {}
+      try { history = JSON.parse(historyContext); } catch (e) { }
     }
-    
+
     let finalPrompt = "";
 
     if (prompt && prompt.trim()) {
@@ -111,7 +111,7 @@ router.post("/upload", authMiddleware, upload.single("file"), async (req, res) =
 
     // Save to history using original prompt or a generic string if empty
     const savedPrompt = prompt && prompt.trim() ? prompt : `Resume Evaluation (${file.originalname})`;
-    
+
     await Chat.create({
       firebaseUid: req.user.uid,
       prompt: savedPrompt,
