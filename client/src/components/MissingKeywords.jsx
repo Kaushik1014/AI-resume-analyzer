@@ -4,7 +4,7 @@ const MissingKeywords = ({ keywords }) => {
   if (!keywords || keywords.length === 0) return null;
 
   return (
-    <div className="w-full bg-red-500/5 rounded-[20px] p-6 border border-red-500/20 mb-6">
+    <div className="w-full bg-red-500/5 rounded-2xl sm:rounded-[20px] p-4 sm:p-6 border border-red-500/20 mb-4 sm:mb-6">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

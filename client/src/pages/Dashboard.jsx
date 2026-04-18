@@ -12,6 +12,10 @@ import SectionScores from "@/components/SectionScores";
 import MissingKeywords from "@/components/MissingKeywords";
 import ToneAnalysis from "@/components/ToneAnalysis";
 import FormattingTips from "@/components/FormattingTips";
+import RoleSuggestions from "@/components/RoleSuggestions";
+import ResumePDFReport from "@/components/ResumePDFReport";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // ─── SVG Icon Components ───
 const ArrowUpIcon = () => (
@@ -676,6 +680,42 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [lastParsedData, setLastParsedData] = useState(null);
+  const pdfReportRef = useRef(null);
+
+  const handleDownloadPDF = async () => {
+    if (!pdfReportRef.current) return;
+    try {
+      const canvas = await html2canvas(pdfReportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = pdfWidth / imgWidth;
+      let heightLeft = imgHeight * ratio;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight * ratio);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position -= pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight * ratio);
+        heightLeft -= pdfHeight;
+      }
+
+      pdf.save('Resume_Analysis_Report.pdf');
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+    }
+  };
 
 
 
@@ -764,7 +804,7 @@ const Dashboard = () => {
         </div>
 
         <div
-          className="flex-1 flex flex-col items-center justify-start mt-20 px-6 sm:px-10 pb-32"
+          className="flex-1 flex flex-col items-center justify-start mt-16 sm:mt-20 px-3 sm:px-6 md:px-10 pb-24 sm:pb-32"
           style={{ gap: 44 }}
         >
           {chatSession.length === 0 ? (
@@ -810,11 +850,11 @@ const Dashboard = () => {
               </div>
             </>
           ) : (
-            <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 pointer-events-auto mb-8 animate-fade-in mt-6">
+            <div className="w-full max-w-4xl mx-auto flex flex-col gap-4 sm:gap-6 pointer-events-auto mb-8 animate-fade-in mt-4 sm:mt-6">
               {chatSession.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`w-full p-6 sm:px-8 rounded-[24px] border shadow-lg ${msg.role === "user"
+                  className={`w-full p-4 sm:p-6 sm:px-8 rounded-2xl sm:rounded-[24px] border shadow-lg ${msg.role === "user"
                       ? "bg-white/10 ml-auto max-w-2xl border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]"
                       : "bg-black/60 backdrop-blur-2xl max-w-3xl border-white/10"
                     }`}
@@ -847,14 +887,36 @@ const Dashboard = () => {
                         }
 
                         if (parsedData && parsedData.atsScore !== undefined) {
+                          // Store for PDF report
+                          if (!lastParsedData || lastParsedData.atsScore !== parsedData.atsScore) {
+                            setTimeout(() => setLastParsedData(parsedData), 0);
+                          }
                           return (
                             <>
                               <ATSGraph score={parsedData.atsScore} />
                               {parsedData.sectionScores && <SectionScores scores={parsedData.sectionScores} />}
+                              {parsedData.roleSpecificFeedback && <RoleSuggestions roleData={parsedData.roleSpecificFeedback} />}
                               {parsedData.missingKeywords && <MissingKeywords keywords={parsedData.missingKeywords} />}
                               {parsedData.toneCheck && <ToneAnalysis toneData={parsedData.toneCheck} />}
                               {parsedData.formattingTips && <FormattingTips formattingData={parsedData.formattingTips} />}
                               <ReactMarkdown>{parsedData.feedback}</ReactMarkdown>
+                              {/* Download PDF Button */}
+                              <button
+                                onClick={handleDownloadPDF}
+                                className="mt-6 flex items-center gap-2.5 px-6 py-3 rounded-xl font-schibsted font-semibold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 mx-auto"
+                                style={{
+                                  background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                                  color: '#fff',
+                                  boxShadow: '0 4px 20px rgba(99,102,241,0.4)',
+                                }}
+                              >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                  <polyline points="7 10 12 15 17 10"></polyline>
+                                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download PDF Report
+                              </button>
                             </>
                           );
                         }
@@ -891,6 +953,9 @@ const Dashboard = () => {
 
       {/* Off-canvas History Panel */}
       <HistoryPanel isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
+
+      {/* Hidden PDF Report */}
+      <ResumePDFReport ref={pdfReportRef} data={lastParsedData} />
     </div>
   );
 };

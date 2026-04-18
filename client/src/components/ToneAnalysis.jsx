@@ -13,7 +13,7 @@ const ToneAnalysis = ({ toneData }) => {
   const cleanWeakVerbs = filterEmptyStops(toneData.weakVerbs);
 
   return (
-    <div className="w-full bg-indigo-500/5 rounded-[20px] p-6 border border-indigo-500/20 mb-6 mt-4">
+    <div className="w-full bg-indigo-500/5 rounded-2xl sm:rounded-[20px] p-4 sm:p-6 border border-indigo-500/20 mb-4 sm:mb-6 mt-3 sm:mt-4">
       <h3 className="text-lg font-fustat text-white uppercase tracking-wider font-bold mb-5 flex items-center justify-center gap-2">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
           <path d="M12 20h9"></path>

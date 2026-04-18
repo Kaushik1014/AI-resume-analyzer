@@ -10,8 +10,8 @@ const SectionScores = ({ scores }) => {
   };
 
   return (
-    <div className="w-full bg-black/40 rounded-[20px] p-6 border border-white/10 mb-6 mt-4">
-      <h3 className="text-lg font-fustat text-white mb-5 uppercase tracking-wider font-bold text-center">
+    <div className="w-full bg-black/40 rounded-2xl sm:rounded-[20px] p-4 sm:p-6 border border-white/10 mb-4 sm:mb-6 mt-3 sm:mt-4">
+      <h3 className="text-base sm:text-lg font-fustat text-white mb-4 sm:mb-5 uppercase tracking-wider font-bold text-center">
         Section Analysis
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5">

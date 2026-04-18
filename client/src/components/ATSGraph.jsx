@@ -10,24 +10,24 @@ const ATSGraph = ({ score }) => {
   else if (score < 75) color = "hsl(40, 100%, 50%)"; // orange
 
   return (
-    <div className="flex flex-col items-center justify-center my-8">
+    <div className="flex flex-col items-center justify-center my-4 sm:my-8">
       <div className="relative flex items-center justify-center">
-        <svg className="transform -rotate-90 w-40 h-40">
+        <svg className="transform -rotate-90 w-28 h-28 sm:w-40 sm:h-40">
           <circle
-            cx="80"
-            cy="80"
+            cx="50%"
+            cy="50%"
             r={radius}
             stroke="currentColor"
-            strokeWidth="12"
+            strokeWidth="10"
             fill="transparent"
             className="text-white/10"
           />
           <circle
-            cx="80"
-            cy="80"
+            cx="50%"
+            cy="50%"
             r={radius}
             stroke={color}
-            strokeWidth="12"
+            strokeWidth="10"
             fill="transparent"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
@@ -36,8 +36,8 @@ const ATSGraph = ({ score }) => {
           />
         </svg>
         <div className="absolute flex flex-col items-center justify-center">
-          <span className="text-4xl font-bold font-fustat text-white">{score}</span>
-          <span className="text-xs text-white/50 uppercase tracking-widest mt-1 font-schibsted font-bold">ATS Score</span>
+          <span className="text-3xl sm:text-4xl font-bold font-fustat text-white">{score}</span>
+          <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-widest mt-1 font-schibsted font-bold">ATS Score</span>
         </div>
       </div>
     </div>

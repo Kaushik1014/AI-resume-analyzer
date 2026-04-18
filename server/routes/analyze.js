@@ -105,6 +105,11 @@ You must respond with ONLY a valid JSON object. Do not include markdown formatti
 Use this exact structure:
 {
   "atsScore": <a number between 0 and 100 representing the ATS score>,
+  "executiveSummary": "<a short 2-3 sentence AI-curated analytical summary of top strengths and crucial areas for improvement intended for a high-level PDF report>",
+  "roleSpecificFeedback": {
+    "detectedRole": "<the inferred primary targeting role based on context (e.g. 'Software Engineer', 'Product Manager', 'UX Designer')>",
+    "suggestions": ["<tailored suggestion 1 leveraging specific industry standards for the detected role>", "<tailored suggestion 2>"]
+  },
   "sectionScores": {
     "Summary": <score out of 10>,
     "Skills": <score out of 10>,

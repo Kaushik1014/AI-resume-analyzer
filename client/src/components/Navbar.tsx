@@ -13,6 +13,7 @@ const Navbar = () => {
   const { firebaseUser, dbUser, logout } = useAuth();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const rafRef = useRef(null);
   const lastScrolled = useRef(false);
 
@@ -53,13 +54,13 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border py-4" : "bg-transparent py-6"
+        isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border py-3 md:py-4" : "bg-transparent py-4 md:py-6"
       }`}
     >
-      <div className="container mx-auto px-6 md:px-10 flex items-center justify-between">
+      <div className="container mx-auto px-4 sm:px-6 md:px-10 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <span className="text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
+          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
             RESUME IQ
           </span>
         </Link>
@@ -73,11 +74,10 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-4">
+        {/* Desktop Action Buttons */}
+        <div className="hidden sm:flex items-center gap-4">
           {firebaseUser ? (
             <>
-              {/* User avatar / initial */}
               <Link to="/dashboard" className="flex items-center gap-3 group">
                 {photoURL ? (
                   <img
@@ -95,13 +95,11 @@ const Navbar = () => {
                   {displayName || "Dashboard"}
                 </span>
               </Link>
-
-              {/* Logout button */}
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={handleLogout}
-                className="hidden sm:flex text-xs tracking-widest font-bold px-4 hover:bg-white/10 hover:text-white transition-[background-color,color] duration-200"
+                className="text-xs tracking-widest font-bold px-4 hover:bg-white/10 hover:text-white transition-[background-color,color] duration-200"
               >
                 <i className="fa-solid fa-right-from-bracket mr-2" />
                 LOGOUT
@@ -109,13 +107,13 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Button size="sm" variant="ghost" className="hidden sm:flex text-xs tracking-widest font-bold px-4 hover:bg-white/10 hover:text-white transition-[background-color,color] duration-200" asChild>
+              <Button size="sm" variant="ghost" className="text-xs tracking-widest font-bold px-4 hover:bg-white/10 hover:text-white transition-[background-color,color] duration-200" asChild>
                 <Link to="/login">
                   <i className="fa-solid fa-right-to-bracket mr-2" />
                   LOGIN
                 </Link>
               </Button>
-              <Button size="sm" className="hidden sm:flex text-xs tracking-widest font-bold px-6 bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/20 shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-[background-color,box-shadow] duration-200" asChild>
+              <Button size="sm" className="text-xs tracking-widest font-bold px-6 bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/20 shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-[background-color,box-shadow] duration-200" asChild>
                 <Link to="/signup">
                   <i className="fa-solid fa-user-plus mr-2" />
                   SIGN UP
@@ -123,6 +121,49 @@ const Navbar = () => {
               </Button>
             </>
           )}
+        </div>
+
+        {/* Mobile Hamburger */}
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="sm:hidden flex flex-col gap-1.5 p-2"
+          aria-label="Toggle menu"
+        >
+          <span className={`block w-6 h-0.5 bg-white transition-transform duration-300 ${mobileOpen ? "rotate-45 translate-y-2" : ""}`} />
+          <span className={`block w-6 h-0.5 bg-white transition-opacity duration-300 ${mobileOpen ? "opacity-0" : ""}`} />
+          <span className={`block w-6 h-0.5 bg-white transition-transform duration-300 ${mobileOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`sm:hidden overflow-hidden transition-all duration-300 ${mobileOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+        <div className="px-4 py-4 bg-background/95 backdrop-blur-xl border-t border-border flex flex-col gap-3">
+          {navLinks.map((link) => (
+            <Link key={link.label} to={link.path} onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest py-2">
+              {link.label}
+            </Link>
+          ))}
+          <div className="border-t border-border pt-3 mt-1 flex flex-col gap-2">
+            {firebaseUser ? (
+              <>
+                <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="text-sm text-foreground uppercase tracking-widest py-2 font-bold">
+                  Dashboard
+                </Link>
+                <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="text-sm text-red-400 uppercase tracking-widest py-2 text-left font-bold">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="text-sm text-foreground uppercase tracking-widest py-2 font-bold">
+                  Login
+                </Link>
+                <Link to="/signup" onClick={() => setMobileOpen(false)} className="text-sm text-primary uppercase tracking-widest py-2 font-bold">
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </nav>

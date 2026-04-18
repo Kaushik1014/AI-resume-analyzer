@@ -2,9 +2,13 @@
 import React, { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 
+import { useNavigate } from "react-router-dom";
+
 const Spline = React.lazy(() => import("@splinetool/react-spline"));
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-screen flex items-end bg-hero-bg overflow-hidden">
       {/* Spline 3D Background — rendered at 50% res and scaled up for performance */}
@@ -50,7 +54,7 @@ const HeroSection = () => {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 opacity-0 animate-fade-up pointer-events-auto" style={{ animationDelay: "0.4s" }}>
-          <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded-full border border-primary/20 shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-[background-color,box-shadow] duration-300">
+          <Button onClick={() => navigate("/login")} size="lg" className="w-full sm:w-auto h-14 px-8 text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded-full border border-primary/20 shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-[background-color,box-shadow] duration-300">
             <i className="fa-solid fa-wand-magic-sparkles mr-2" />
             Analyze My Resume
           </Button>
