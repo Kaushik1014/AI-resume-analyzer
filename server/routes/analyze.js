@@ -99,12 +99,8 @@ router.post("/upload", authMiddleware, upload.single("file"), async (req, res) =
       try { history = JSON.parse(historyContext); } catch (e) { }
     }
 
-    let finalPrompt = "";
-
-    if (prompt && prompt.trim()) {
-      finalPrompt = `${prompt}\n\nHere is the resume content:\n${parsedText}`;
-    } else {
-      finalPrompt = `Analyze this resume against ATS (Applicant Tracking System) standards. 
+    let finalPrompt = `Analyze this resume against ATS (Applicant Tracking System) standards.
+${prompt && prompt.trim() ? `\nCompare the resume specifically against the following Job Description to identify keyword gaps.\nJob Description:\n${prompt}\n` : ""}
 You must respond with ONLY a valid JSON object. Do not include markdown formatting or backticks around the JSON. 
 Use this exact structure:
 {
@@ -115,12 +111,17 @@ Use this exact structure:
     "Experience": <score out of 10>,
     "Education": <score out of 10>
   },
+  "missingKeywords": [${prompt && prompt.trim() ? '"<missing keyword 1 string>", "<missing keyword 2>"' : ""}],
+  "toneCheck": {
+    "passiveVoice": ["<identify sentences using passive voice>", "<leave empty array if none>"],
+    "weakVerbs": ["<identify weak or cliché verbs used>", "<leave empty array if none>"],
+    "quantification": "<feedback on whether they used enough numbers and metrics to quantify their impact>"
+  },
   "feedback": "<detailed constructive feedback in markdown format focusing on structure, keywords, and impact>"
 }
 
 Resume Content:
 ${parsedText}`;
-    }
 
     const responseText = await generatePromptResponse(finalPrompt, history);
 

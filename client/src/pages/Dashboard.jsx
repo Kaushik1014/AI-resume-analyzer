@@ -9,6 +9,8 @@ import ReactMarkdown from "react-markdown";
 import HistoryPanel from "@/components/HistoryPanel";
 import ATSGraph from "@/components/ATSGraph";
 import SectionScores from "@/components/SectionScores";
+import MissingKeywords from "@/components/MissingKeywords";
+import ToneAnalysis from "@/components/ToneAnalysis";
 
 // ─── SVG Icon Components ───
 const ArrowUpIcon = () => (
@@ -84,6 +86,7 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [jobDescription, setJobDescription] = useState("");
   const fileInputRef = useRef(null);
   const dragCounterRef = useRef(0);
 
@@ -154,7 +157,7 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
 
   const handleAnalyze = () => {
     if (uploadedFile && isUploaded && !isLoading) {
-      onUpload({ prompt: "", file: uploadedFile });
+      onUpload({ prompt: jobDescription, file: uploadedFile });
     }
   };
 
@@ -313,6 +316,17 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Job Description Input for Gap Analysis */}
+          <div className="mt-4 transition-all duration-300">
+            <textarea
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              placeholder="Paste Job Description for Keyword Gap Analysis (Optional)"
+              className="w-full bg-black/20 text-white/90 text-sm font-schibsted p-4 rounded-xl border border-white/10 outline-none focus:border-primary/50 transition-colors resize-none placeholder:text-white/30"
+              rows={3}
+            />
           </div>
 
           {/* Action Buttons */}
@@ -836,6 +850,8 @@ const Dashboard = () => {
                             <>
                               <ATSGraph score={parsedData.atsScore} />
                               {parsedData.sectionScores && <SectionScores scores={parsedData.sectionScores} />}
+                              {parsedData.missingKeywords && <MissingKeywords keywords={parsedData.missingKeywords} />}
+                              {parsedData.toneCheck && <ToneAnalysis toneData={parsedData.toneCheck} />}
                               <ReactMarkdown>{parsedData.feedback}</ReactMarkdown>
                             </>
                           );
