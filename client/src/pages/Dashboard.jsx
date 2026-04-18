@@ -11,6 +11,7 @@ import ATSGraph from "@/components/ATSGraph";
 import SectionScores from "@/components/SectionScores";
 import MissingKeywords from "@/components/MissingKeywords";
 import ToneAnalysis from "@/components/ToneAnalysis";
+import FormattingTips from "@/components/FormattingTips";
 
 // ─── SVG Icon Components ───
 const ArrowUpIcon = () => (
@@ -852,6 +853,7 @@ const Dashboard = () => {
                               {parsedData.sectionScores && <SectionScores scores={parsedData.sectionScores} />}
                               {parsedData.missingKeywords && <MissingKeywords keywords={parsedData.missingKeywords} />}
                               {parsedData.toneCheck && <ToneAnalysis toneData={parsedData.toneCheck} />}
+                              {parsedData.formattingTips && <FormattingTips formattingData={parsedData.formattingTips} />}
                               <ReactMarkdown>{parsedData.feedback}</ReactMarkdown>
                             </>
                           );

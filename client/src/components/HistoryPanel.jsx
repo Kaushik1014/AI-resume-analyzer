@@ -5,6 +5,7 @@ import ATSGraph from "@/components/ATSGraph";
 import SectionScores from "@/components/SectionScores";
 import MissingKeywords from "@/components/MissingKeywords";
 import ToneAnalysis from "@/components/ToneAnalysis";
+import FormattingTips from "@/components/FormattingTips";
 // ─── SVG Icons ───
 const CloseIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -171,6 +172,7 @@ export default function HistoryPanel({ isOpen, onClose }) {
                                 {parsedData.sectionScores && <SectionScores scores={parsedData.sectionScores} />}
                                 {parsedData.missingKeywords && <MissingKeywords keywords={parsedData.missingKeywords} />}
                                 {parsedData.toneCheck && <ToneAnalysis toneData={parsedData.toneCheck} />}
+                                {parsedData.formattingTips && <FormattingTips formattingData={parsedData.formattingTips} />}
                                 <ReactMarkdown>{parsedData.feedback}</ReactMarkdown>
                               </>
                             );

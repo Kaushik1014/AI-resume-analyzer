@@ -117,6 +117,11 @@ Use this exact structure:
     "weakVerbs": ["<identify weak or cliché verbs used>", "<leave empty array if none>"],
     "quantification": "<feedback on whether they used enough numbers and metrics to quantify their impact>"
   },
+  "formattingTips": {
+    "length": "<feedback assessing if the resume length is optimal (e.g. 1-2 pages)>",
+    "bulletStructure": "<feedback assessing bullet point consistency, length, and formatting>",
+    "datesFormat": "<feedback assessing chronological consistency and date formatting e.g. MM/YYYY>"
+  },
   "feedback": "<detailed constructive feedback in markdown format focusing on structure, keywords, and impact>"
 }
 
