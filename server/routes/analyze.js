@@ -104,7 +104,22 @@ router.post("/upload", authMiddleware, upload.single("file"), async (req, res) =
     if (prompt && prompt.trim()) {
       finalPrompt = `${prompt}\n\nHere is the resume content:\n${parsedText}`;
     } else {
-      finalPrompt = `Rate this resume out of 10. Tell the changes what to do focusing on structure, keywords, and impact. Be constructive and specific.\n\nResume Content:\n${parsedText}`;
+      finalPrompt = `Analyze this resume against ATS (Applicant Tracking System) standards. 
+You must respond with ONLY a valid JSON object. Do not include markdown formatting or backticks around the JSON. 
+Use this exact structure:
+{
+  "atsScore": <a number between 0 and 100 representing the ATS score>,
+  "sectionScores": {
+    "Summary": <score out of 10>,
+    "Skills": <score out of 10>,
+    "Experience": <score out of 10>,
+    "Education": <score out of 10>
+  },
+  "feedback": "<detailed constructive feedback in markdown format focusing on structure, keywords, and impact>"
+}
+
+Resume Content:
+${parsedText}`;
     }
 
     const responseText = await generatePromptResponse(finalPrompt, history);

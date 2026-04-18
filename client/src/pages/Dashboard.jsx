@@ -7,6 +7,8 @@ const Spline = React.lazy(() => import("@splinetool/react-spline"));
 import { useAuth } from "@/context/AuthContext";
 import ReactMarkdown from "react-markdown";
 import HistoryPanel from "@/components/HistoryPanel";
+import ATSGraph from "@/components/ATSGraph";
+import SectionScores from "@/components/SectionScores";
 
 // ─── SVG Icon Components ───
 const ArrowUpIcon = () => (
@@ -815,7 +817,32 @@ const Dashboard = () => {
                     </div>
                   ) : (
                     <div className="font-schibsted text-white/90 text-sm md:text-base leading-relaxed [&>p]:mb-4 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mb-4 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>li]:mb-1 [&>strong]:text-white">
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                      {(() => {
+                        let parsedData = null;
+                        try {
+                          let cleanText = msg.text;
+                          if (cleanText.startsWith("```json")) {
+                            cleanText = cleanText.replace(/```json/g, "").replace(/```/g, "").trim();
+                          } else if (cleanText.startsWith("```")) {
+                            cleanText = cleanText.replace(/```/g, "").trim();
+                          }
+                          parsedData = JSON.parse(cleanText);
+                        } catch (e) {
+                          // Not JSON
+                        }
+
+                        if (parsedData && parsedData.atsScore !== undefined) {
+                          return (
+                            <>
+                              <ATSGraph score={parsedData.atsScore} />
+                              {parsedData.sectionScores && <SectionScores scores={parsedData.sectionScores} />}
+                              <ReactMarkdown>{parsedData.feedback}</ReactMarkdown>
+                            </>
+                          );
+                        }
+
+                        return <ReactMarkdown>{msg.text}</ReactMarkdown>;
+                      })()}
                     </div>
                   )}
                 </div>

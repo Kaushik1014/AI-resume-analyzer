@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import api from "@/services/api";
 import ReactMarkdown from "react-markdown";
-
+import ATSGraph from "@/components/ATSGraph";
+import SectionScores from "@/components/SectionScores";
 // ─── SVG Icons ───
 const CloseIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -149,7 +150,29 @@ export default function HistoryPanel({ isOpen, onClose }) {
                   >
                     <div className="p-4 bg-black/40 overflow-y-auto max-h-[500px]">
                       <div className="font-schibsted text-white/80 text-sm leading-relaxed [&>p]:mb-3 [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-bold [&>h2]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-3 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-3 [&>li]:mb-1 [&>strong]:text-white">
-                        <ReactMarkdown>{chat.response}</ReactMarkdown>
+                        {(() => {
+                          let parsedData = null;
+                          try {
+                            let cleanText = chat.response;
+                            if (cleanText.startsWith("```json")) {
+                              cleanText = cleanText.replace(/```json/g, "").replace(/```/g, "").trim();
+                            } else if (cleanText.startsWith("```")) {
+                              cleanText = cleanText.replace(/```/g, "").trim();
+                            }
+                            parsedData = JSON.parse(cleanText);
+                          } catch (e) {}
+
+                          if (parsedData && parsedData.atsScore !== undefined) {
+                            return (
+                              <>
+                                <ATSGraph score={parsedData.atsScore} />
+                                {parsedData.sectionScores && <SectionScores scores={parsedData.sectionScores} />}
+                                <ReactMarkdown>{parsedData.feedback}</ReactMarkdown>
+                              </>
+                            );
+                          }
+                          return <ReactMarkdown>{chat.response}</ReactMarkdown>;
+                        })()}
                       </div>
                     </div>
                   </div>
