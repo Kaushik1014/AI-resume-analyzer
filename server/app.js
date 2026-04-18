@@ -3,7 +3,6 @@ import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import admin from "firebase-admin";
-import { readFileSync } from "fs";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth.js";
@@ -12,8 +11,7 @@ import analyzeRoutes from "./routes/analyze.js";
 dotenv.config();
 
 // ─── Firebase Admin SDK initialization ───
-const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || "./firebase-key.json";
-const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf-8"));
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
