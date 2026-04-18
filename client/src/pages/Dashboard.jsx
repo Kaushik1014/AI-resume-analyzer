@@ -194,20 +194,19 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onClick={() => !uploadedFile && fileInputRef.current?.click()}
-            className={`relative cursor-pointer rounded-2xl transition-all duration-300 flex flex-col items-center justify-center text-center ${
-              uploadedFile ? "p-5" : "p-6 md:p-8"
-            }`}
+            className={`relative cursor-pointer rounded-2xl transition-all duration-300 flex flex-col items-center justify-center text-center ${uploadedFile ? "p-5" : "p-6 md:p-8"
+              }`}
             style={{
               border: isDragging
                 ? "2px solid hsl(119, 99%, 46%)"
                 : uploadedFile
-                ? "2px solid rgba(255,255,255,0.1)"
-                : "2px dashed rgba(255,255,255,0.15)",
+                  ? "2px solid rgba(255,255,255,0.1)"
+                  : "2px dashed rgba(255,255,255,0.15)",
               background: isDragging
                 ? "rgba(34,197,94,0.06)"
                 : uploadedFile
-                ? "rgba(255,255,255,0.03)"
-                : "rgba(255,255,255,0.02)",
+                  ? "rgba(255,255,255,0.03)"
+                  : "rgba(255,255,255,0.02)",
               minHeight: uploadedFile ? "auto" : 150,
             }}
           >
@@ -462,11 +461,10 @@ function ChatbotWidget({ firebaseUser }) {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 pointer-events-auto">
       {/* Chat Window */}
       <div
-        className={`transition-all duration-400 origin-bottom-right ${
-          isOpen
+        className={`transition-all duration-400 origin-bottom-right ${isOpen
             ? "opacity-100 scale-100 translate-y-0"
             : "opacity-0 scale-90 translate-y-4 pointer-events-none"
-        }`}
+          }`}
         style={{
           width: 380,
           maxWidth: "calc(100vw - 48px)",
@@ -527,11 +525,10 @@ function ChatbotWidget({ firebaseUser }) {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] px-4 py-3 rounded-2xl font-schibsted text-sm leading-relaxed ${
-                    msg.role === "user"
+                  className={`max-w-[85%] px-4 py-3 rounded-2xl font-schibsted text-sm leading-relaxed ${msg.role === "user"
                       ? "rounded-br-md"
                       : "rounded-bl-md"
-                  }`}
+                    }`}
                   style={{
                     background:
                       msg.role === "user"
@@ -663,10 +660,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  const handleNewChat = () => {
-    setChatSession([]);
-    setError(null);
-  };
+
 
   // Forward wheel events from Spline canvas to page scroll
   const handleBackgroundWheel = useCallback((e) => {
@@ -749,7 +743,7 @@ const Dashboard = () => {
 
       <div className="relative z-10 w-full pointer-events-none flex flex-col min-h-screen">
         <div className="pointer-events-auto">
-          <Navbar onNewChat={chatSession.length > 0 ? handleNewChat : undefined} />
+          <Navbar />
         </div>
 
         <div
@@ -803,11 +797,10 @@ const Dashboard = () => {
               {chatSession.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`w-full p-6 sm:px-8 rounded-[24px] border shadow-lg ${
-                    msg.role === "user"
+                  className={`w-full p-6 sm:px-8 rounded-[24px] border shadow-lg ${msg.role === "user"
                       ? "bg-white/10 ml-auto max-w-2xl border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]"
                       : "bg-black/60 backdrop-blur-2xl max-w-3xl border-white/10"
-                  }`}
+                    }`}
                 >
                   {msg.role === "user" ? (
                     <div className="text-white/95">
