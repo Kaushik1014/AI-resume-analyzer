@@ -160,3 +160,12 @@ This project is open source and available under the [MIT License](LICENSE).
 - [Firebase](https://firebase.google.com/)
 - [Spline](https://spline.design/)
 - [Tailwind CSS](https://tailwindcss.com/)
+
+---
+
+👨‍💻 Author
+
+Kaushik Gautam
+
+Built with ❤️ for learning and practice
+
