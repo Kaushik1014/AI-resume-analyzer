@@ -126,7 +126,7 @@ npm run dev
 
 ## 📊 How It Works
 
-1. **Upload** your resume (PDF or TXT)
+1. **Upload** your resume
 2. Optionally **paste a job description** for keyword gap analysis
 3. AI analyzes the resume and returns a structured JSON report
 4. The dashboard renders interactive visualizations:
