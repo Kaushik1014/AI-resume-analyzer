@@ -1,8 +1,8 @@
 # Resume IQ — AI-Powered Resume Analyzer
 
-> **Live Demo:** [_Add live link here_](#)
+> **Live Demo:** [https://ai-resume-analyzer-coral-psi.vercel.app](#)
 
-An intelligent, full-stack resume analysis platform powered by Google Gemini AI. Upload your resume, get an instant ATS compatibility score, section-by-section breakdown, keyword gap analysis, tone evaluation, formatting tips, and role-specific career suggestions — all in one beautiful dashboard.
+Resume IQ is a smart, full-stack resume analysis platform powered by advanced AI. It helps users evaluate their resumes against ATS (Applicant Tracking Systems), identify missing keywords, improve tone, and receive role-specific suggestions — all through an interactive and modern dashboard.
 
 ---
 
@@ -126,7 +126,7 @@ npm run dev
 
 ## 📊 How It Works
 
-1. **Upload** your resume (PDF or TXT)
+1. **Upload** your resume
 2. Optionally **paste a job description** for keyword gap analysis
 3. AI analyzes the resume and returns a structured JSON report
 4. The dashboard renders interactive visualizations:
@@ -160,3 +160,12 @@ This project is open source and available under the [MIT License](LICENSE).
 - [Firebase](https://firebase.google.com/)
 - [Spline](https://spline.design/)
 - [Tailwind CSS](https://tailwindcss.com/)
+
+---
+
+👨‍💻 Author
+
+Kaushik Gautam
+
+Built with ❤️ for learning and practice
+
