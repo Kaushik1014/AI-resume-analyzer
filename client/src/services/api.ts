@@ -8,11 +8,15 @@ const api = axios.create({
 });
 
 // Attach Firebase ID token to every outgoing request
+// Falls back to demo token when no real Firebase user (demo mode)
 api.interceptors.request.use(async (config) => {
   const user = auth.currentUser;
   if (user) {
     const token = await user.getIdToken();
     config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    // Demo mode fallback — backend accepts 'test-token' for demo-user-123
+    config.headers.Authorization = `Bearer test-token`;
   }
   return config;
 });

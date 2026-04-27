@@ -13,7 +13,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // @access  Private
 router.post("/prompt", authMiddleware, async (req, res) => {
   try {
-    const { prompt, historyContext = [] } = req.body;
+    const { prompt, historyContext = [], saveHistory = true } = req.body;
 
     if (!prompt) {
       return res.status(400).json({ error: "No prompt provided" });
@@ -21,12 +21,14 @@ router.post("/prompt", authMiddleware, async (req, res) => {
 
     const responseText = await generatePromptResponse(prompt, historyContext);
 
-    // Save to history
-    await Chat.create({
-      firebaseUid: req.user.uid,
-      prompt,
-      response: responseText,
-    });
+    // Only save to history when explicitly requested (resume analysis saves, chatbot skips)
+    if (saveHistory !== false) {
+      await Chat.create({
+        firebaseUid: req.user.uid,
+        prompt,
+        response: responseText,
+      });
+    }
 
     res.json({ response: responseText });
   } catch (error) {

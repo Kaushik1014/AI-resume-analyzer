@@ -99,7 +99,7 @@ export default function HistoryPanel({ isOpen, onClose }) {
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-40 gap-3 text-white/60">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
               <span className="font-schibsted text-sm font-medium animate-pulse">Loading history...</span>
             </div>
           ) : error ? (

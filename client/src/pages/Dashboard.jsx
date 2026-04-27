@@ -372,7 +372,7 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
                 background: uploadedFile && isUploaded
                   ? "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 51%))"
                   : "rgba(255,255,255,0.06)",
-                color: uploadedFile && isUploaded ? "#000" : "rgba(255,255,255,0.4)",
+                color: uploadedFile && isUploaded ? "#fff" : "rgba(255,255,255,0.4)",
                 border: "1px solid rgba(255,255,255,0.06)",
                 boxShadow: uploadedFile && isUploaded
                   ? "0 4px 20px rgba(239,68,68,0.3)"
@@ -447,6 +447,7 @@ function ChatbotWidget({ firebaseUser }) {
         },
         body: JSON.stringify({
           prompt: userMsg,
+          saveHistory: false,
           historyContext: messages.filter((m) => m.role !== "ai" || messages.indexOf(m) !== 0),
         }),
       });
@@ -796,7 +797,7 @@ const Dashboard = () => {
         </div>
 
         <div
-          className="flex-1 flex flex-col items-center justify-start mt-16 sm:mt-20 px-3 sm:px-6 md:px-10 pb-24 sm:pb-32"
+          className="flex-1 flex flex-col items-center justify-start mt-16 sm:mt-20 px-3 sm:px-6 md:px-10 pb-24 sm:pb-32 pointer-events-auto"
           style={{ gap: 44 }}
         >
           {chatSession.length === 0 ? (
