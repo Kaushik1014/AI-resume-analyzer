@@ -31,6 +31,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, displayName: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  demoLogin: () => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -133,6 +134,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [syncUser]);
 
+  const demoLogin = useCallback(async () => {
+    setLoading(true);
+    // Provide a mocked firebase user
+    const mockUser: any = {
+      uid: "demo-user-123",
+      email: "demo@example.com",
+      displayName: "Demo User",
+      photoURL: "",
+      getIdToken: async () => "test-token"
+    };
+    setFirebaseUser(mockUser);
+    setDbUser({
+      _id: "demo-id",
+      firebaseUid: "demo-user-123",
+      email: "demo@example.com",
+      displayName: "Demo User",
+      photoURL: "",
+      provider: "demo",
+      createdAt: new Date().toISOString()
+    });
+    setLoading(false);
+  }, []);
+
   const logout = useCallback(async () => {
     await signOut(auth);
     setDbUser(null);
@@ -150,6 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         signup,
         loginWithGoogle,
+        demoLogin,
         logout,
         clearError,
       }}

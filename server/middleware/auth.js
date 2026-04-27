@@ -9,6 +9,12 @@ const authMiddleware = async (req, res, next) => {
 
   const token = header.split("Bearer ")[1];
 
+  // DEV BYPASS: Allow 'test-token' for local demo mode since Firebase might not be configured
+  if (token === "test-token") {
+    req.user = { uid: "demo-user-123", email: "demo@example.com" };
+    return next();
+  }
+
   try {
     const decoded = await admin.auth().verifyIdToken(token);
     req.user = decoded;

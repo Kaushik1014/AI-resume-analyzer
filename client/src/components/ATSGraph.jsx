@@ -5,9 +5,9 @@ const ATSGraph = ({ score }) => {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
 
-  let color = "hsl(119, 99%, 46%)"; // green
-  if (score < 50) color = "hsl(0, 100%, 60%)"; // red
-  else if (score < 75) color = "hsl(40, 100%, 50%)"; // orange
+  let color = "hsl(0, 84%, 60%)"; // red (high score)
+  if (score < 50) color = "hsl(0, 100%, 40%)"; // dark red (low)
+  else if (score < 75) color = "hsl(25, 100%, 50%)"; // orange (mid)
 
   return (
     <div className="flex flex-col items-center justify-center my-4 sm:my-8">

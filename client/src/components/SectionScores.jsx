@@ -4,9 +4,9 @@ const SectionScores = ({ scores }) => {
   if (!scores) return null;
 
   const getScoreColor = (score) => {
-    if (score >= 8) return "hsl(119, 99%, 46%)"; // green
-    if (score >= 5) return "hsl(40, 100%, 50%)"; // orange
-    return "hsl(0, 100%, 60%)"; // red
+    if (score >= 8) return "hsl(0, 84%, 60%)"; // red (high score)
+    if (score >= 5) return "hsl(25, 100%, 50%)"; // orange (mid)
+    return "hsl(0, 100%, 40%)"; // dark red (low)
   };
 
   return (

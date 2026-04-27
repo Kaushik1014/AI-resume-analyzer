@@ -2,11 +2,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { LogIn, UserPlus, LogOut } from "lucide-react";
 
 const navLinks = [
-  { label: "Features", path: "/features" },
-  { label: "How It Works", path: "/how-it-works" },
-  { label: "FAQ", path: "/faq" },
+  { label: "Features", href: "#features" },
+  { label: "How It Works", href: "#how-it-works" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 const Navbar = () => {
@@ -17,13 +18,11 @@ const Navbar = () => {
   const rafRef = useRef(null);
   const lastScrolled = useRef(false);
 
-  // Throttle scroll handler to animation frames — prevents layout thrashing
   const handleScroll = useCallback(() => {
     if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
       const scrolled = window.scrollY > 50;
-      // Only trigger re-render if state actually changed
       if (scrolled !== lastScrolled.current) {
         lastScrolled.current = scrolled;
         setIsScrolled(scrolled);
@@ -44,7 +43,15 @@ const Navbar = () => {
     navigate("/");
   };
 
-  // Build user display info
+  const scrollToSection = (href: string) => {
+    setMobileOpen(false);
+    const id = href.replace("#", "");
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const displayName = dbUser?.displayName || firebaseUser?.displayName || "";
   const photoURL = dbUser?.photoURL || firebaseUser?.photoURL || "";
   const initials = displayName
@@ -53,72 +60,86 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border py-3 md:py-4" : "bg-transparent py-4 md:py-6"
-      }`}
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+      style={{
+        background: isScrolled
+          ? "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)"
+          : "transparent",
+        backdropFilter: isScrolled ? "blur(20px) saturate(180%)" : "none",
+        WebkitBackdropFilter: isScrolled ? "blur(20px) saturate(180%)" : "none",
+        borderBottom: isScrolled ? "1px solid rgba(255,255,255,0.08)" : "1px solid transparent",
+        boxShadow: isScrolled
+          ? "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)"
+          : "none",
+        padding: isScrolled ? "12px 0" : "20px 0",
+      }}
     >
-      <div className="container mx-auto px-4 sm:px-6 md:px-10 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary">
-            RESUME IQ
-          </span>
+        <Link to="/" className="text-lg font-bold tracking-tight text-white drop-shadow-sm">
+          RESUME IQ
         </Link>
 
         {/* Center nav links — hidden on mobile */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
-            <Link key={link.label} to={link.path} className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest">
+            <button
+              key={link.label}
+              onClick={() => scrollToSection(link.href)}
+              className="relative px-4 py-2 text-sm text-white/60 hover:text-white transition-all duration-300 rounded-lg hover:bg-white/5"
+            >
               {link.label}
-            </Link>
+            </button>
           ))}
         </div>
 
         {/* Desktop Action Buttons */}
-        <div className="hidden sm:flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-3">
           {firebaseUser ? (
             <>
-              <Link to="/dashboard" className="flex items-center gap-3 group">
+              <Link to="/dashboard" className="flex items-center gap-2">
                 {photoURL ? (
                   <img
                     src={photoURL}
                     alt={displayName}
-                    className="w-8 h-8 rounded-full border-2 border-primary/30 group-hover:border-primary transition-colors"
+                    className="w-8 h-8 rounded-full border border-white/20"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center text-xs font-bold text-primary group-hover:border-primary transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-xs font-bold text-white border border-white/10">
                     {initials}
                   </div>
                 )}
-                <span className="hidden sm:block text-xs tracking-widest font-bold text-muted-foreground group-hover:text-foreground transition-colors uppercase">
-                  {displayName || "Dashboard"}
-                </span>
+                <span className="text-sm text-white/70">{displayName || "Dashboard"}</span>
               </Link>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleLogout}
-                className="text-xs tracking-widest font-bold px-4 hover:bg-white/10 hover:text-white transition-[background-color,color] duration-200"
-              >
-                <i className="fa-solid fa-right-from-bracket mr-2" />
-                LOGOUT
-              </Button>
+              <button onClick={handleLogout} className="text-sm text-white/50 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5 flex items-center gap-1.5">
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
             </>
           ) : (
             <>
-              <Button size="sm" variant="ghost" className="text-xs tracking-widest font-bold px-4 hover:bg-white/10 hover:text-white transition-[background-color,color] duration-200" asChild>
-                <Link to="/login">
-                  <i className="fa-solid fa-right-to-bracket mr-2" />
-                  LOGIN
-                </Link>
-              </Button>
-              <Button size="sm" className="text-xs tracking-widest font-bold px-6 bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/20 shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-[background-color,box-shadow] duration-200" asChild>
-                <Link to="/signup">
-                  <i className="fa-solid fa-user-plus mr-2" />
-                  SIGN UP
-                </Link>
-              </Button>
+              <Link
+                to="/login"
+                className="text-sm text-white/70 hover:text-white transition-all duration-300 px-4 py-2 rounded-lg hover:bg-white/5 flex items-center gap-1.5"
+              >
+                <LogIn className="w-4 h-4" />
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                className="text-sm px-5 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  color: "white",
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)",
+                }}
+              >
+                <UserPlus className="w-4 h-4" />
+                Sign Up
+              </Link>
             </>
           )}
         </div>
@@ -135,30 +156,43 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu — also glassmorphism */}
       <div className={`sm:hidden overflow-hidden transition-all duration-300 ${mobileOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
-        <div className="px-4 py-4 bg-background/95 backdrop-blur-xl border-t border-border flex flex-col gap-3">
+        <div
+          className="px-6 py-4 flex flex-col gap-3"
+          style={{
+            background: "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+            backdropFilter: "blur(20px) saturate(180%)",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
           {navLinks.map((link) => (
-            <Link key={link.label} to={link.path} onClick={() => setMobileOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest py-2">
+            <button
+              key={link.label}
+              onClick={() => scrollToSection(link.href)}
+              className="text-sm text-white/60 hover:text-white transition-colors text-left py-2 px-3 rounded-lg hover:bg-white/5"
+            >
               {link.label}
-            </Link>
+            </button>
           ))}
-          <div className="border-t border-border pt-3 mt-1 flex flex-col gap-2">
+          <div className="border-t border-white/10 pt-3 mt-1 flex flex-col gap-2">
             {firebaseUser ? (
               <>
-                <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="text-sm text-foreground uppercase tracking-widest py-2 font-bold">
+                <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="text-sm text-white py-2 px-3 font-bold">
                   Dashboard
                 </Link>
-                <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="text-sm text-red-400 uppercase tracking-widest py-2 text-left font-bold">
+                <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="text-sm text-red-400 py-2 px-3 text-left font-bold">
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setMobileOpen(false)} className="text-sm text-foreground uppercase tracking-widest py-2 font-bold">
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="text-sm text-white py-2 px-3 flex items-center gap-2">
+                  <LogIn className="w-4 h-4" />
                   Login
                 </Link>
-                <Link to="/signup" onClick={() => setMobileOpen(false)} className="text-sm text-primary uppercase tracking-widest py-2 font-bold">
+                <Link to="/signup" onClick={() => setMobileOpen(false)} className="text-sm text-white py-2 px-3 flex items-center gap-2">
+                  <UserPlus className="w-4 h-4" />
                   Sign Up
                 </Link>
               </>

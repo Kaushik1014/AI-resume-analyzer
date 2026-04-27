@@ -1,9 +1,7 @@
 // Dashboard: Hero section with file upload zone and floating chatbot,
 // navigation bar, badge, headline — shown after login.
-import React, { useState, useRef, useCallback, useEffect, Suspense } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-
-const Spline = React.lazy(() => import("@splinetool/react-spline"));
 import { useAuth } from "@/context/AuthContext";
 import ReactMarkdown from "react-markdown";
 import HistoryPanel from "@/components/HistoryPanel";
@@ -192,7 +190,7 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
           className="absolute inset-0 rounded-[28px] transition-opacity duration-300 pointer-events-none"
           style={{
             opacity: isDragging ? 1 : 0,
-            background: "radial-gradient(600px circle at center, rgba(34,197,94,0.12) 0%, transparent 70%)",
+            background: "radial-gradient(600px circle at center, rgba(239,68,68,0.12) 0%, transparent 70%)",
           }}
         />
 
@@ -208,12 +206,12 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
               }`}
             style={{
               border: isDragging
-                ? "2px solid hsl(119, 99%, 46%)"
+                ? "2px solid hsl(0, 84%, 60%)"
                 : uploadedFile
                   ? "2px solid rgba(255,255,255,0.1)"
                   : "2px dashed rgba(255,255,255,0.15)",
               background: isDragging
-                ? "rgba(34,197,94,0.06)"
+                ? "rgba(239,68,68,0.06)"
                 : uploadedFile
                   ? "rgba(255,255,255,0.03)"
                   : "rgba(255,255,255,0.02)",
@@ -232,7 +230,7 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
               <>
                 <div
                   className={`mb-3 transition-transform duration-300 ${isDragging ? "scale-110 -translate-y-1" : ""}`}
-                  style={{ color: isDragging ? "hsl(119, 99%, 46%)" : "rgba(255,255,255,0.35)" }}
+                  style={{ color: isDragging ? "hsl(0, 84%, 60%)" : "rgba(255,255,255,0.35)" }}
                 >
                   <UploadCloudIcon />
                 </div>
@@ -241,7 +239,7 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
                   {isDragging ? "Drop your resume here" : "Drag & drop your resume"}
                 </p>
                 <p className="font-schibsted text-white/45 text-sm mb-3">
-                  or <span className="text-primary underline underline-offset-4 decoration-primary/40 hover:decoration-primary transition-colors">browse files</span> from your computer
+                  or <span className="text-red-500 underline underline-offset-4 decoration-red-500/40 hover:decoration-red-500 transition-colors">browse files</span> from your computer
                 </p>
 
                 {/* Accepted file types */}
@@ -269,10 +267,10 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
                     className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
                     style={{
                       background: isUploaded
-                        ? "rgba(34,197,94,0.15)"
+                        ? "rgba(239,68,68,0.15)"
                         : "rgba(255,255,255,0.08)",
                       color: isUploaded
-                        ? "hsl(119, 99%, 46%)"
+                        ? "hsl(0, 84%, 60%)"
                         : "rgba(255,255,255,0.6)",
                     }}
                   >
@@ -286,7 +284,7 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
                     <p className="font-schibsted text-white/40 text-xs mt-0.5">
                       {formatFileSize(uploadedFile.size)}
                       {isUploaded && (
-                        <span className="text-primary ml-2">• Ready to analyze</span>
+                        <span className="text-red-500 ml-2">• Ready to analyze</span>
                       )}
                     </p>
                   </div>
@@ -310,7 +308,7 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
                         className="h-full rounded-full transition-all duration-300"
                         style={{
                           width: `${uploadProgress}%`,
-                          background: "linear-gradient(90deg, hsl(119, 99%, 46%), hsl(119, 90%, 55%))",
+                          background: "linear-gradient(90deg, hsl(0, 84%, 60%), hsl(0, 84%, 65%))",
                         }}
                       />
                     </div>
@@ -329,7 +327,7 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               placeholder="Paste Job Description for Keyword Gap Analysis (Optional)"
-              className="w-full bg-black/20 text-white/90 text-sm font-schibsted p-4 rounded-xl border border-white/10 outline-none focus:border-primary/50 transition-colors resize-none placeholder:text-white/30"
+              className="w-full bg-black/20 text-white/90 text-sm font-schibsted p-4 rounded-xl border border-white/10 outline-none focus:border-red-500/50 transition-colors resize-none placeholder:text-white/30"
               rows={3}
             />
           </div>
@@ -372,12 +370,12 @@ function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-schibsted font-semibold text-sm transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 background: uploadedFile && isUploaded
-                  ? "linear-gradient(135deg, hsl(119, 99%, 46%), hsl(119, 80%, 40%))"
+                  ? "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 51%))"
                   : "rgba(255,255,255,0.06)",
                 color: uploadedFile && isUploaded ? "#000" : "rgba(255,255,255,0.4)",
                 border: "1px solid rgba(255,255,255,0.06)",
                 boxShadow: uploadedFile && isUploaded
-                  ? "0 4px 20px rgba(34,197,94,0.3)"
+                  ? "0 4px 20px rgba(239,68,68,0.3)"
                   : "none",
               }}
             >
@@ -514,8 +512,8 @@ function ChatbotWidget({ firebaseUser }) {
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center"
                 style={{
-                  background: "linear-gradient(135deg, hsl(119, 99%, 46%), hsl(119, 80%, 35%))",
-                  boxShadow: "0 2px 12px rgba(34,197,94,0.3)",
+                  background: "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 45%))",
+                  boxShadow: "0 2px 12px rgba(239,68,68,0.3)",
                 }}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -525,7 +523,7 @@ function ChatbotWidget({ firebaseUser }) {
               <div>
                 <h3 className="font-fustat font-bold text-white text-sm tracking-wide">Resume AI</h3>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
                   <span className="font-schibsted text-white/40 text-xs">Online</span>
                 </div>
               </div>
@@ -553,7 +551,7 @@ function ChatbotWidget({ firebaseUser }) {
                   style={{
                     background:
                       msg.role === "user"
-                        ? "linear-gradient(135deg, hsl(119, 99%, 46%), hsl(119, 80%, 40%))"
+                        ? "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 51%))"
                         : "rgba(255,255,255,0.06)",
                     color: msg.role === "user" ? "#000" : "rgba(255,255,255,0.85)",
                     border: msg.role === "user" ? "none" : "1px solid rgba(255,255,255,0.06)",
@@ -626,7 +624,7 @@ function ChatbotWidget({ firebaseUser }) {
                   width: 32,
                   height: 32,
                   background: input.trim()
-                    ? "linear-gradient(135deg, hsl(119, 99%, 46%), hsl(119, 80%, 40%))"
+                    ? "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 51%))"
                     : "rgba(255,255,255,0.08)",
                   color: input.trim() ? "#000" : "rgba(255,255,255,0.4)",
                 }}
@@ -645,10 +643,10 @@ function ChatbotWidget({ firebaseUser }) {
         style={{
           background: isOpen
             ? "rgba(255,255,255,0.1)"
-            : "linear-gradient(135deg, hsl(119, 99%, 46%), hsl(119, 80%, 35%))",
+            : "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 45%))",
           boxShadow: isOpen
             ? "0 4px 20px rgba(0,0,0,0.3)"
-            : "0 4px 30px rgba(34,197,94,0.4), 0 0 60px rgba(34,197,94,0.15)",
+            : "0 4px 30px rgba(239,68,68,0.4), 0 0 60px rgba(239,68,68,0.15)",
           color: isOpen ? "#fff" : "#000",
           border: isOpen ? "1px solid rgba(255,255,255,0.1)" : "none",
         }}
@@ -662,7 +660,7 @@ function ChatbotWidget({ firebaseUser }) {
           <div
             className="absolute inset-0 rounded-full animate-ping"
             style={{
-              background: "rgba(34,197,94,0.2)",
+              background: "rgba(239,68,68,0.2)",
               animationDuration: "2s",
             }}
           />
@@ -719,10 +717,7 @@ const Dashboard = () => {
 
 
 
-  // Forward wheel events from Spline canvas to page scroll
-  const handleBackgroundWheel = useCallback((e) => {
-    window.scrollBy(0, e.deltaY);
-  }, []);
+
 
   const handleFileUpload = async ({ prompt, file }) => {
     if (!firebaseUser) {
@@ -784,19 +779,16 @@ const Dashboard = () => {
 
   return (
     <div className="relative min-h-screen bg-hero-bg overflow-x-hidden flex flex-col">
-      {/* ─── Spline 3D Background ─── */}
-      <div className="fixed inset-0 z-0 overflow-hidden" onWheel={handleBackgroundWheel}>
-        <div className="w-[50%] h-[50%] origin-top-left scale-[2]">
-          <Suspense fallback={<div className="absolute inset-0 bg-hero-bg" />}>
-            <Spline
-              scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
-              className="w-full h-full"
-            />
-          </Suspense>
-        </div>
+      {/* ─── Image 6 Background ─── */}
+      <div className="fixed inset-0 z-0">
+        <img
+          src="/image-6.png"
+          alt=""
+          className="w-full h-full object-cover"
+        />
       </div>
 
-      <div className="fixed inset-0 bg-black/40 z-[1] pointer-events-none" />
+      <div className="fixed inset-0 bg-black/50 z-[1] pointer-events-none" />
 
       <div className="relative z-10 w-full pointer-events-none flex flex-col min-h-screen">
         <div className="pointer-events-auto">
@@ -823,7 +815,7 @@ const Dashboard = () => {
                     animationDelay: "0.2s",
                   }}
                 >
-                  Analyze Your <span className="text-primary">Resume</span>
+                  Analyze Your <span className="text-red-500">Resume</span>
                 </h1>
 
                 <p
@@ -855,14 +847,14 @@ const Dashboard = () => {
                 <div
                   key={idx}
                   className={`w-full p-4 sm:p-6 sm:px-8 rounded-2xl sm:rounded-[24px] border shadow-lg ${msg.role === "user"
-                      ? "bg-white/10 ml-auto max-w-2xl border-primary/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]"
+                      ? "bg-white/10 ml-auto max-w-2xl border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
                       : "bg-black/60 backdrop-blur-2xl max-w-3xl border-white/10"
                     }`}
                 >
                   {msg.role === "user" ? (
                     <div className="text-white/95">
                       {msg.fileName && (
-                        <div className="flex items-center gap-2 text-primary text-sm mb-3 font-semibold bg-primary/10 w-fit px-3 py-1.5 rounded-lg">
+                        <div className="flex items-center gap-2 text-red-500 text-sm mb-3 font-semibold bg-red-500/10 w-fit px-3 py-1.5 rounded-lg">
                           <AttachIcon /> {msg.fileName}
                         </div>
                       )}
@@ -930,7 +922,7 @@ const Dashboard = () => {
 
               {isLoading && (
                 <div className="w-full max-w-3xl p-6 sm:px-8 rounded-[24px] border border-white/10 shadow-lg bg-black/60 backdrop-blur-2xl flex items-center gap-4 text-white/70 h-20">
-                  <div className="w-6 h-6 border-[3px] border-primary border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                  <div className="w-6 h-6 border-[3px] border-red-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
                   <span className="font-schibsted animate-pulse text-base font-medium">
                     Generating AI insights...
                   </span>

@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 10%;
+    --background: 0 0% 4%;
     --foreground: 0 0% 96%;
-    --primary: 119 99% 46%;
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 4%;
-    --secondary: 0 0% 18%;
+    --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 96%;
     --muted: 0 0% 16%;
     --muted-foreground: 0 0% 60%;
-    --accent: 119 99% 46%;
+    --accent: 142 71% 45%;
     --accent-foreground: 0 0% 4%;
     --destructive: 0 84% 60%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 119 99% 46%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 142 71% 45%;
     --radius: 0.5rem;
-    --nav-button: 0 0% 18%;
-    --hero-bg: 0 0% 8%;
   }
 
   body {
-    @apply font-sora antialiased bg-background text-foreground;
+    @apply antialiased;
+    background: #0a0a0a;
+    color: #f5f5f5;
   }
 }

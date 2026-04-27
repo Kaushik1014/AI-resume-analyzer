@@ -1,116 +1,291 @@
-import { UploadCloud, Cpu, Target, FileCheck } from "lucide-react";
+// HowItWorksSection: Scroll-driven frame animation with steps appearing one by one
+import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Upload, Brain, ScanSearch, Lightbulb } from "lucide-react";
 
-import BorderGlow from "./BorderGlow";
+gsap.registerPlugin(ScrollTrigger);
+
+const HIW_FRAME_COUNT = 192;
+const HIW_FRAME_PATH = (i: number) =>
+  `/frames-hiw/ezgif-frame-${String(i).padStart(3, "0")}.jpg`;
 
 const steps = [
   {
     id: "01",
     title: "Upload Document",
-    description: "Simply drag and drop your PDF or DOCX file into our secure platform. Your data remains completely private and encrypted.",
-    icon: UploadCloud,
+    description:
+      "Simply drag and drop your PDF or DOCX file into our secure platform. Your data remains completely private and encrypted.",
+    icon: Upload,
   },
   {
     id: "02",
     title: "AI Analysis",
-    description: "Our application sends your document directly to Google Gemini AI to analyze your syntax, grammar, and career experience accurately.",
-    icon: Cpu,
+    description:
+      "Our application sends your document directly to Google Gemini AI to analyze your syntax, grammar, and career experience accurately.",
+    icon: Brain,
   },
   {
     id: "03",
     title: "Deep ATS Analysis",
-    description: "We cross-reference your structure and keyword density against thousands of modern Applicant Tracking System algorithm benchmarks.",
-    icon: Target,
+    description:
+      "We cross-reference your structure and keyword density against thousands of modern Applicant Tracking System algorithm benchmarks.",
+    icon: ScanSearch,
   },
   {
     id: "04",
     title: "Actionable Insights",
-    description: "Receive a comprehensive granular report detailing your exact score alongside personalized, line-by-line recommendations.",
-    icon: FileCheck,
+    description:
+      "Receive a comprehensive granular report detailing your exact score alongside personalized, line-by-line recommendations.",
+    icon: Lightbulb,
   },
 ];
 
 const HowItWorksSection = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const frameIndexRef = useRef({ value: 0 });
+  const [loaded, setLoaded] = useState(false);
+
+  // ── Preload all HIW frames ──
+  useEffect(() => {
+    const images: HTMLImageElement[] = [];
+    let loadedCount = 0;
+
+    for (let i = 1; i <= HIW_FRAME_COUNT; i++) {
+      const img = new Image();
+      img.src = HIW_FRAME_PATH(i);
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === HIW_FRAME_COUNT) {
+          imagesRef.current = images;
+          setLoaded(true);
+        }
+      };
+      images.push(img);
+    }
+  }, []);
+
+  // ── Draw frame on canvas ──
+  const drawFrame = (index: number) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    const img = imagesRef.current[index];
+    if (!canvas || !ctx || !img) return;
+
+    const cw = canvas.width;
+    const ch = canvas.height;
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const scale = Math.max(cw / iw, ch / ih);
+    const dx = (cw - iw * scale) / 2;
+    const dy = (ch - ih * scale) / 2;
+
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(img, dx, dy, iw * scale, ih * scale);
+  };
+
+  // ── Resize canvas ──
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      if (loaded) drawFrame(frameIndexRef.current.value);
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, [loaded]);
+
+  // ── GSAP ScrollTrigger animations ──
+  useEffect(() => {
+    if (!loaded || !sectionRef.current) return;
+
+    drawFrame(0);
+
+    const ctx = gsap.context(() => {
+      // Scrub frame index across the full scroll
+      gsap.to(frameIndexRef.current, {
+        value: HIW_FRAME_COUNT - 1,
+        ease: "none",
+        snap: { value: 1 },
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.5,
+        },
+        onUpdate: () => {
+          drawFrame(Math.round(frameIndexRef.current.value));
+        },
+      });
+
+      // Section heading — fade in at 0-6%
+      gsap.fromTo(
+        ".hiw-heading",
+        { opacity: 0, y: 50 },
+        {
+          opacity: 1,
+          y: 0,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top top",
+            end: "6% top",
+            scrub: true,
+          },
+        }
+      );
+
+      // Step 1 — fade in at 10-18%
+      gsap.fromTo(
+        ".hiw-step-0",
+        { opacity: 0, x: -60 },
+        {
+          opacity: 1,
+          x: 0,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "10% top",
+            end: "18% top",
+            scrub: true,
+          },
+        }
+      );
+
+      // Step 2 — fade in at 28-36%
+      gsap.fromTo(
+        ".hiw-step-1",
+        { opacity: 0, x: -60 },
+        {
+          opacity: 1,
+          x: 0,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "28% top",
+            end: "36% top",
+            scrub: true,
+          },
+        }
+      );
+
+      // Step 3 — fade in at 48-56%
+      gsap.fromTo(
+        ".hiw-step-2",
+        { opacity: 0, x: -60 },
+        {
+          opacity: 1,
+          x: 0,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "48% top",
+            end: "56% top",
+            scrub: true,
+          },
+        }
+      );
+
+      // Step 4 — fade in at 68-76%
+      gsap.fromTo(
+        ".hiw-step-3",
+        { opacity: 0, x: -60 },
+        {
+          opacity: 1,
+          x: 0,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "68% top",
+            end: "76% top",
+            scrub: true,
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, [loaded]);
+
   return (
-    <section className="relative bg-transparent overflow-hidden pointer-events-none pb-20">
-      <div className="relative z-10 w-full max-w-[90%] sm:max-w-md lg:max-w-4xl px-6 md:px-10 pt-32 pb-12 pointer-events-none">
-        <p 
-          className="opacity-0 animate-fade-up text-primary font-semibold tracking-wide uppercase text-sm mb-4 md:mb-6" 
-          style={{ animationDelay: "0.1s" }}
-        >
-          Process
-        </p>
+    <div
+      ref={sectionRef}
+      id="how-it-works"
+      className="relative"
+      style={{ height: "400vh" }}
+    >
+      {/* Sticky viewport */}
+      <div className="sticky top-0 w-full h-screen overflow-hidden">
+        {/* Canvas background */}
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
-        <h1
-          className="opacity-0 animate-fade-up text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.05] tracking-[-0.05em] text-foreground mb-3 md:mb-6 uppercase"
-          style={{ animationDelay: "0.2s" }}
-        >
-          How <span className="text-primary">Resume IQ</span> Works
-        </h1>
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/50 pointer-events-none" />
 
-        <p
-          className="opacity-0 animate-fade-up text-muted-foreground text-[clamp(0.875rem,1.5vw,1.25rem)] font-light mb-4 md:mb-8 max-w-2xl"
-          style={{ animationDelay: "0.3s" }}
-        >
-          Four simple steps to transform your application from a standard document into an interview-generating asset.
-        </p>
-      </div>
+        {/* Top gradient fade from previous section */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
+        {/* Bottom gradient fade into next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent z-10 pointer-events-none" />
 
-      <div className="relative z-10 w-full px-6 md:px-10 pointer-events-auto">
-        <div className="max-w-5xl mx-auto relative pt-10 pb-20">
-          {/* Central line design for timeline look - Desktop */}
-          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-primary to-transparent -translate-x-1/2 rounded-full" />
-          
-           {/* Left-aligned line for mobile */}
-          <div className="md:hidden absolute left-8 top-0 bottom-0 w-[3px] bg-gradient-to-b from-transparent via-primary to-transparent rounded-full" />
+        {/* Content overlay — 2×2 grid layout */}
+        <div className="absolute inset-0 z-20 flex items-center pointer-events-none">
+          <div className="w-full max-w-6xl mx-auto px-6 md:px-10 py-20">
+            {/* Section heading — compact */}
+            <div className="hiw-heading opacity-0 mb-5">
+              <p className="text-xs text-white/40 uppercase tracking-wider mb-1">
+                Process
+              </p>
+              <h2 className="text-2xl md:text-4xl font-bold text-white">
+                How <span className="text-red-500">Resume IQ</span> Works
+              </h2>
+            </div>
 
-          <div className="flex flex-col gap-12 md:gap-0">
-            {steps.map((step, index) => {
-              const isEven = index % 2 === 0; // Left side
-
-              return (
-                <div 
-                  key={step.id} 
-                  className={`relative flex w-full ${isEven ? "md:justify-start" : "md:justify-end"} ${index !== 0 ? "md:-mt-12 lg:-mt-24" : ""}`}
-                >
-                  {/* Connecting Node Desktop */}
-                  <div className="hidden md:flex absolute top-1/2 left-1/2 w-5 h-5 rounded-full bg-black border-[4px] border-primary shadow-[0_0_15px_rgba(34,197,94,0.8)] z-10 -translate-x-1/2 -translate-y-1/2" />
-                  
-                  {/* Connecting Node Mobile */}
-                  <div className="md:hidden absolute top-1/2 left-8 w-5 h-5 rounded-full bg-black border-[4px] border-primary shadow-[0_0_15px_rgba(34,197,94,0.8)] z-10 -translate-x-1/2 -translate-y-1/2" />
-
-                  {/* Card Container */}
-                  <div 
-                    className={`w-full md:w-[calc(50%-3rem)] opacity-0 animate-fade-up pl-16 md:pl-0`}
-                    style={{ animationDelay: `${0.4 + index * 0.15}s` }}
+            {/* Steps in a 2×2 grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl">
+              {steps.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <div
+                    key={step.id}
+                    className={`hiw-step-${index} opacity-0`}
                   >
-                    <BorderGlow 
-                      className={`w-full group ${isEven ? "md:text-right" : "md:text-left"}`}
-                      borderRadius={24}
+                    <div
+                      className="p-4 rounded-xl border border-white/10 h-full"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+                        backdropFilter: "blur(16px) saturate(150%)",
+                        WebkitBackdropFilter: "blur(16px) saturate(150%)",
+                        boxShadow:
+                          "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+                      }}
                     >
-                      <div className="flex flex-col p-8 backdrop-blur-md">
-                        <dt className={`flex items-center gap-x-5 mb-5 ${isEven ? "md:flex-row-reverse" : "md:flex-row"}`}>
-                          <div className="flex shrink-0 h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 group-hover:scale-110 transition-transform duration-500">
-                            <step.icon className="h-8 w-8 text-primary" aria-hidden="true" />
-                          </div>
-                          <div className={`flex flex-col ${isEven ? "md:items-end" : "md:items-start"}`}>
-                            <span className="text-primary/80 text-sm font-bold font-mono tracking-widest">STEP {step.id}</span>
-                            <span className="text-2xl font-bold leading-tight text-foreground mt-1">{step.title}</span>
-                          </div>
-                        </dt>
-
-                        <dd className={`flex flex-auto flex-col text-base leading-relaxed text-muted-foreground/90 font-light ${isEven ? "md:items-end" : "md:items-start"}`}>
-                          <p className="flex-auto max-w-sm">{step.description}</p>
-                        </dd>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/10 border border-red-500/20 flex-shrink-0">
+                          <Icon className="w-4 h-4 text-red-400" />
+                        </div>
+                        <span className="text-red-500 font-mono text-xs font-bold tracking-widest">
+                          STEP {step.id}
+                        </span>
+                        <div className="h-px flex-1 bg-white/10" />
                       </div>
-                    </BorderGlow>
+                      <h3 className="text-base font-semibold text-white mb-1">
+                        {step.title}
+                      </h3>
+                      <p className="text-xs text-white/50 leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

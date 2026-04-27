@@ -1,176 +1,113 @@
+// FeaturesSection: feature cards overlaid on Image 2 background, with Lucide icons
 import {
-  faFileLines,
-  faTachometerAlt,
-  faListUl,
-  faSearch,
-  faCommentDots,
-  faPen,
-  faTrophy,
-  faDownload,
-} from "@fortawesome/free-solid-svg-icons";
+  FileSearch,
+  BarChart3,
+  LayoutList,
+  Search,
+  MessageSquareText,
+  AlignLeft,
+  UserCheck,
+  Download,
+} from "lucide-react";
 
 const features = [
   {
     title: "Resume parsing",
     description: "Extract text seamlessly from PDF/DOCX uploads without losing formatting details.",
-    faIcon: faFileLines,
+    icon: FileSearch,
   },
   {
     title: "ATS score",
     description: "Find out exactly how well your resume reads to modern Applicant Tracking Systems.",
-    faIcon: faTachometerAlt,
+    icon: BarChart3,
   },
   {
     title: "Section analysis",
     description: "Get individualized scores for your Summary, Skills, Experience, and Education.",
-    faIcon: faListUl,
+    icon: LayoutList,
   },
   {
     title: "Keyword gap analysis",
     description: "Paste a job description and instantly discover the critical keywords you're missing.",
-    faIcon: faSearch,
+    icon: Search,
   },
   {
     title: "Tone & language check",
     description: "Identify and eliminate passive voice, weak verbs, and unquantified statements.",
-    faIcon: faCommentDots,
+    icon: MessageSquareText,
   },
   {
     title: "Formatting tips",
     description: "Optimize document length, bullet structure, date formatting, and layout consistency.",
-    faIcon: faPen,
+    icon: AlignLeft,
   },
   {
     title: "Tailored suggestions",
     description: "Receive role-specific feedback structured specifically for engineers, designers, or managers.",
-    faIcon: faTrophy,
+    icon: UserCheck,
   },
   {
     title: "Downloadable report",
     description: "Export a beautiful, shareable PDF summary of your analysis and improved metrics.",
-    faIcon: faDownload,
+    icon: Download,
   },
 ];
 
-import { useMemo } from "react";
-import CircularGallery from "./CircularGallery";
-
-// Reusable offscreen canvas — avoids creating and GC-ing 8 canvases on every call
-let _sharedCanvas: HTMLCanvasElement | null = null;
-function getSharedCanvas(w: number, h: number) {
-  if (!_sharedCanvas) _sharedCanvas = document.createElement("canvas");
-  _sharedCanvas.width = w;
-  _sharedCanvas.height = h;
-  return _sharedCanvas;
-}
-
-function createFeatureCard(title: string, description: string, faIcon: any) {
-  const canvas = getSharedCanvas(800, 1000);
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return "";
-
-  // Background
-  ctx.fillStyle = "#161616"; 
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Soft border gradient feeling
-  ctx.strokeStyle = "#333";
-  ctx.lineWidth = 4;
-  ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
-
-  // Draw FontAwesome Vector Icon
-  if (faIcon && faIcon.icon) {
-    const svgPathData = faIcon.icon[4];
-    const iconWidth = faIcon.icon[0];
-    const iconHeight = faIcon.icon[1];
-    
-    // Scale safely so the icon bounds are 120x120
-    const maxIconSize = 120;
-    const scale = Math.min(maxIconSize / iconWidth, maxIconSize / iconHeight);
-    
-    const drawX = canvas.width / 2 - (iconWidth * scale) / 2;
-    const drawY = 100; // Place closer to the top
-    
-    ctx.save();
-    ctx.translate(drawX, drawY);
-    ctx.scale(scale, scale);
-    ctx.fillStyle = "#ffffff"; // White icon with primary title stands out
-    const p = new Path2D(svgPathData as string);
-    ctx.fill(p);
-    ctx.restore();
-  }
-
-  // Title
-  ctx.fillStyle = "#22c55e"; 
-  ctx.font = "bold 65px 'Sora', sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(title, canvas.width / 2, 300);
-
-  // Description - Multiline wrap
-  ctx.fillStyle = "#e5e5e5"; 
-  ctx.font = "40px 'Sora', sans-serif";
-  const words = description.split(" ");
-  let line = "";
-  let y = 430;
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + " ";
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > canvas.width - 120 && n > 0) {
-      ctx.fillText(line.trim(), canvas.width / 2, y);
-      line = words[n] + " ";
-      y += 65;
-    } else {
-      line = testLine;
-    }
-  }
-  ctx.fillText(line.trim(), canvas.width / 2, y);
-
-  // Use JPEG at 85% quality instead of PNG — ~60% smaller data URIs for the same visual output
-  return canvas.toDataURL("image/jpeg", 0.85);
-}
-
 const FeaturesSection = () => {
-  // Translate features to gallery items formatting ONCE
-  // Wrapping in useMemo prevents massive stutter caused by creating 8 heavy HTML canvases and converting them to Base64 strings on every internal React render/paint loop.
-  const galleryItems = useMemo(() => features.map((feature) => ({
-    image: createFeatureCard(feature.title, feature.description, feature.faIcon),
-    text: "", 
-  })), []);
-
   return (
-    <section id="features" className="relative bg-transparent overflow-hidden pointer-events-none">
-      {/* Content wrapper matching Hero section left-aligned layout */}
-      <div className="relative z-10 w-full max-w-[90%] sm:max-w-md lg:max-w-3xl px-6 md:px-10 pt-32 pb-4 pointer-events-none">
-        
-        {/* 'Capabilities' as small highlight */}
-        <p 
-          className="opacity-0 animate-fade-up text-primary font-semibold tracking-wide uppercase text-sm mb-4 md:mb-6" 
-          style={{ animationDelay: "0.1s" }}
-        >
-          Capabilities
-        </p>
-
-        {/* Heading matching Hero 'clamp(3rem,8vw,6rem)' */}
-        <h1
-          className="opacity-0 animate-fade-up text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.05] tracking-[-0.05em] text-foreground mb-3 md:mb-6 uppercase"
-          style={{ animationDelay: "0.2s" }}
-        >
-          Everything you need for the <span className="text-primary">perfect</span> application
-        </h1>
-
-        {/* Subheading/Description matching Hero font-light structure */}
-        <p
-          className="opacity-0 animate-fade-up text-muted-foreground text-[clamp(0.875rem,1.5vw,1.25rem)] font-light mb-4 md:mb-8"
-          style={{ animationDelay: "0.3s" }}
-        >
-          Our granular AI engine evaluates every word on your resume against proven hiring benchmarks.
-        </p>
+    <section id="features" className="relative min-h-screen overflow-hidden">
+      {/* Background image — fixed for parallax feel */}
+      <div className="absolute inset-0">
+        <img
+          src="/image-2.png"
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/60" />
+        {/* Bottom gradient fade into next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
+        {/* Top gradient fade from previous section */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#0a0a0a] to-transparent" />
       </div>
 
-      <div className="relative z-10 w-full px-6 md:px-10 pb-20 mt-8">
-        <div className="relative w-full h-[50vh] md:h-[60vh] pointer-events-auto rounded-3xl overflow-hidden shadow-2xl bg-black/40 backdrop-blur-sm border border-white/10">
-           <CircularGallery items={galleryItems} bend={3} textColor="#ffffff" borderRadius={0.05} font="bold 30px Sora" />
+      {/* Content */}
+      <div className="relative z-10 py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-sm text-white/40 uppercase tracking-wider mb-3">Capabilities</p>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">
+            Everything you need for the <span className="text-red-500">perfect</span> application
+          </h2>
+          <p className="text-white/50 mb-12 max-w-2xl">
+            Our granular AI engine evaluates every word on your resume against proven hiring benchmarks.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {features.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={feature.title}
+                  className="group p-6 rounded-xl border border-white/10 transition-all duration-300 hover:border-white/20 hover:scale-[1.02]"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+                    backdropFilter: "blur(16px) saturate(150%)",
+                    WebkitBackdropFilter: "blur(16px) saturate(150%)",
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 bg-red-500/10 border border-red-500/20 group-hover:bg-red-500/20 transition-colors duration-300">
+                    <Icon className="w-5 h-5 text-red-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2 text-white group-hover:text-red-400 transition-colors duration-300">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-white/50 leading-relaxed">{feature.description}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
