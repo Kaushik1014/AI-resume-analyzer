@@ -5,6 +5,7 @@ import Index from "@/pages/Index";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import AuthPage from "@/pages/AuthPage";
 import Dashboard from "@/pages/Dashboard";
+import Analyzer from "@/pages/Analyzer";
 import "./index.css";
 
 class AppErrorBoundary extends React.Component<
@@ -71,6 +72,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analyzer"
+          element={
+            <ProtectedRoute>
+              <Analyzer />
             </ProtectedRoute>
           }
         />

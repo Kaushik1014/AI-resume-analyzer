@@ -4,6 +4,7 @@ import { generatePromptResponse } from "../services/geminiService.js";
 import Chat from "../models/Chat.js";
 import multer from "multer";
 import pdfParse from "pdf-parse";
+import mammoth from "mammoth";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -85,14 +86,30 @@ router.post("/upload", authMiddleware, upload.single("file"), async (req, res) =
 
     let parsedText = "";
 
-    // Parse PDF or read plain text
-    if (file.mimetype === "application/pdf") {
+    const mimeType = file.mimetype;
+    const lowerName = file.originalname?.toLowerCase() || "";
+
+    const isPdf = mimeType === "application/pdf" || lowerName.endsWith(".pdf");
+    const isTxt = mimeType === "text/plain" || lowerName.endsWith(".txt");
+    const isDocx =
+      mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      lowerName.endsWith(".docx");
+
+    // Parse PDF, DOCX, or read plain text
+    if (isPdf) {
       const pdfData = await pdfParse(file.buffer);
       parsedText = pdfData.text;
-    } else if (file.mimetype === "text/plain") {
+    } else if (isTxt) {
       parsedText = file.buffer.toString("utf8");
+    } else if (isDocx) {
+      const docxResult = await mammoth.extractRawText({ buffer: file.buffer });
+      parsedText = docxResult.value;
     } else {
-      return res.status(400).json({ error: "Unsupported file type. Only PDF and TXT are allowed." });
+      return res.status(400).json({ error: "Unsupported file type. Only PDF, DOCX, and TXT are allowed." });
+    }
+
+    if (!parsedText || !parsedText.trim()) {
+      return res.status(400).json({ error: "No readable text found in the uploaded file." });
     }
 
     const { prompt, historyContext } = req.body;
