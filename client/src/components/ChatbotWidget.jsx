@@ -72,8 +72,8 @@ export default function ChatbotWidget({ firebaseUser }) {
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 45%))", boxShadow: "0 2px 12px rgba(239,68,68,0.3)" }}>
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1L11 5L15 5.5L12 8.5L13 13L9 11L5 13L6 8.5L3 5.5L7 5L9 1Z" fill="#000" /></svg>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 45%))", boxShadow: "0 2px 12px rgba(239,68,68,0.3)" }}>
+                <img src="/logo.png" alt="Resume AI" className="w-7 h-7 object-contain" />
               </div>
               <div>
                 <h3 className="font-fustat font-bold text-white text-sm tracking-wide">Resume AI</h3>

@@ -76,7 +76,8 @@ const Navbar = () => {
     >
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="text-lg font-bold tracking-tight text-white drop-shadow-sm">
+        <Link to="/" className="flex items-center gap-2 text-lg font-bold tracking-tight text-white drop-shadow-sm">
+          <img src="/logo.png" alt="Resume IQ" className="w-8 h-8 object-contain" />
           RESUME IQ
         </Link>
 

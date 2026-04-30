@@ -123,6 +123,7 @@ const AuthPage = () => {
         className="absolute top-6 left-6 md:top-8 md:left-10 z-20 flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors group"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+        <img src="/logo.png" alt="Resume IQ" className="w-6 h-6 object-contain" />
         <span className="tracking-widest uppercase text-xs font-bold">Resume IQ</span>
       </Link>
 
