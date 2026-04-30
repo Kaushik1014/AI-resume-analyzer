@@ -2,7 +2,7 @@
 
 > **Live Demo:** [https://ai-resume-analyzer-coral-psi.vercel.app](#)
 
-Resume IQ is a smart, full-stack resume analysis platform powered by advanced AI. It helps users evaluate their resumes against ATS (Applicant Tracking Systems), identify missing keywords, improve tone, and receive role-specific suggestions — all through an interactive and modern dashboard.
+Resume IQ is a smart, full-stack resume analysis platform powered by advanced AI. It helps users evaluate their resumes against ATS (Applicant Tracking Systems), identify missing keywords, improve tone, and receive role specific suggestions — all through an interactive and modern dashboard.
 
 ---
 
