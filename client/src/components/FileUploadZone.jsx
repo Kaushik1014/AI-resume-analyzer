@@ -80,12 +80,12 @@ export default function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
   const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); dragCounterRef.current = 0; const files = e.dataTransfer.files; if (files && files.length > 0) processFile(files[0]); };
   const handleFileSelect = (e) => { if (e.target.files && e.target.files.length > 0) processFile(e.target.files[0]); };
   const handleRemoveFile = () => { setUploadedFile(null); setUploadProgress(0); setIsUploaded(false); if (fileInputRef.current) fileInputRef.current.value = ""; };
-  const handleAnalyze = (e) => { e.stopPropagation(); console.log('[DEBUG] Analyze clicked', { uploadedFile: !!uploadedFile, isUploaded, isLoading }); if (uploadedFile && isUploaded && !isLoading) onUpload({ prompt: jobDescription, file: uploadedFile }); };
+  const handleAnalyze = () => { if (uploadedFile && isUploaded && !isLoading) onUpload({ prompt: jobDescription, file: uploadedFile }); };
   const formatFileSize = (bytes) => { if (bytes < 1024) return bytes + " B"; if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"; return (bytes / (1024 * 1024)).toFixed(1) + " MB"; };
 
   return (
     <div className="w-full max-w-5xl mx-auto opacity-0 animate-fade-up" style={{ animationDelay: "0.6s" }}>
-      <div className="relative rounded-[28px]" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 8px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
+      <div className="relative rounded-[28px] overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 8px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
         <div className="absolute inset-0 rounded-[28px] transition-opacity duration-300 pointer-events-none" style={{ opacity: isDragging ? 1 : 0, background: "radial-gradient(600px circle at center, rgba(239,68,68,0.12) 0%, transparent 70%)" }} />
         <div className="p-6 md:p-8">
           <div onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => !uploadedFile && fileInputRef.current?.click()}
@@ -136,12 +136,8 @@ export default function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
                 <SearchIcon /><span className="font-schibsted font-medium">History</span>
               </button>
             </div>
-            <button
-              onClick={(e) => { console.log("button clicked"); handleAnalyze(e); }}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-schibsted font-semibold text-sm transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: uploadedFile && isUploaded ? "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 51%))" : "rgba(255,255,255,0.06)", color: uploadedFile && isUploaded ? "#fff" : "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: uploadedFile && isUploaded ? "0 4px 20px rgba(239,68,68,0.3)" : "none", position: "relative", zIndex: 10, cursor: "pointer" }}
-            >
+            <button onClick={handleAnalyze} disabled={!uploadedFile || !isUploaded || isLoading} className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-schibsted font-semibold text-sm transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: uploadedFile && isUploaded ? "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 51%))" : "rgba(255,255,255,0.06)", color: uploadedFile && isUploaded ? "#fff" : "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: uploadedFile && isUploaded ? "0 4px 20px rgba(239,68,68,0.3)" : "none" }}>
               {isLoading ? (<><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Analyzing...</>) : (<><ArrowUpIcon />Analyze Resume</>)}
             </button>
           </div>

@@ -34,7 +34,9 @@ router.post("/prompt", authMiddleware, async (req, res) => {
     res.json({ response: responseText });
   } catch (error) {
     console.error("Error generating response:", error);
-    res.status(500).json({ error: "Failed to generate AI response" });
+    res.status(error?.statusCode || 500).json({
+      error: error?.message || "Failed to generate AI response",
+    });
   }
 });
 
@@ -166,7 +168,9 @@ ${parsedText}`;
     res.json({ response: responseText });
   } catch (error) {
     console.error("Error analyzing uploaded file:", error);
-    res.status(500).json({ error: "Failed to analyze uploaded resume" });
+    res.status(error?.statusCode || 500).json({
+      error: error?.message || "Failed to analyze uploaded resume",
+    });
   }
 });
 
