@@ -14,7 +14,6 @@ import {
   Loader2,
   ShieldCheck,
   AlertCircle,
-  FlaskConical,
 } from "lucide-react";
 
 const AuthPage = () => {
@@ -27,7 +26,6 @@ const AuthPage = () => {
     login,
     signup,
     loginWithGoogle,
-    demoLogin,
     clearError,
   } = useAuth();
 
@@ -103,19 +101,7 @@ const AuthPage = () => {
     }
   };
 
-  const handleDemoLogin = async () => {
-    setLocalError(null);
-    clearError();
-    setSubmitting(true);
-    try {
-      await demoLogin();
-      navigate("/dashboard", { replace: true });
-    } catch {
-      setLocalError("Demo mode failed to start. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+
 
   const displayError = localError || authError;
 
@@ -407,18 +393,7 @@ const AuthPage = () => {
                   </span>
                 </button>
 
-                {/* Demo Mode Button */}
-                <button
-                  type="button"
-                  onClick={handleDemoLogin}
-                  disabled={submitting}
-                  className="flex items-center justify-center gap-3 h-12 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed mt-1"
-                >
-                  <FlaskConical className="w-4 h-4 text-red-400 group-hover:text-red-300 transition-colors" />
-                  <span className="text-sm text-red-400 group-hover:text-red-300 transition-colors font-medium tracking-wide">
-                    Try Demo Local Mode (Skip Auth)
-                  </span>
-                </button>
+
               </div>
             </form>
 
