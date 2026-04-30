@@ -38,6 +38,7 @@ export default function ChatbotWidget({ firebaseUser }) {
   const scrollToBottom = () => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); };
   useEffect(() => { scrollToBottom(); }, [messages]);
   useEffect(() => { if (isOpen && inputRef.current) inputRef.current.focus(); }, [isOpen]);
+  useEffect(() => { if (!isLoading && isOpen && inputRef.current) inputRef.current.focus(); }, [isLoading]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading || !firebaseUser) return;
