@@ -108,11 +108,11 @@ const AuthPage = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* ─── Image 5 Background ─── */}
-      <div className="absolute inset-0">
+      <div className="fixed inset-0">
         <img
           src="/image-5.png"
           alt=""
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover scale-105"
         />
         <div className="absolute inset-0 bg-black/50" />
       </div>
