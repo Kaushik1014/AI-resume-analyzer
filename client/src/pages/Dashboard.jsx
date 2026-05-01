@@ -1,5 +1,5 @@
 // Dashboard: Hero section with file upload zone and floating chatbot
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import ReactMarkdown from "react-markdown";
@@ -50,6 +50,27 @@ function parseAIResponse(raw) {
     return null;
 }
 
+/**
+ * Format a reset date into a human-readable countdown string
+ */
+function formatTimeUntilReset(resetsAt) {
+    if (!resetsAt) return "";
+    const now = new Date();
+    const reset = new Date(resetsAt);
+    const diff = reset.getTime() - now.getTime();
+    if (diff <= 0) return "now";
+
+    const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+    const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+    const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+
+    let parts = [];
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
+    parts.push(`${minutes}m`);
+    return parts.join(" ");
+}
+
 const Dashboard = () => {
     const { firebaseUser } = useAuth();
     const [chatSession, setChatSession] = useState([]);
@@ -58,6 +79,33 @@ const Dashboard = () => {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [lastParsedData, setLastParsedData] = useState(null);
     const pdfReportRef = useRef(null);
+
+    // ─── Rate limit usage state ───
+    const [usageInfo, setUsageInfo] = useState(null); // { limit, used, remaining, resetsAt }
+    const [usageLoading, setUsageLoading] = useState(true);
+
+    // Fetch usage info on mount
+    useEffect(() => {
+        const fetchUsage = async () => {
+            if (!firebaseUser) { setUsageLoading(false); return; }
+            try {
+                const token = await firebaseUser.getIdToken();
+                const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                const res = await fetch(`${apiUrl}/analyze/usage`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setUsageInfo(data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch usage info:", err);
+            } finally {
+                setUsageLoading(false);
+            }
+        };
+        fetchUsage();
+    }, [firebaseUser]);
 
     const handleDownloadPDF = async () => {
         if (!pdfReportRef.current) return;
@@ -109,6 +157,13 @@ const Dashboard = () => {
 
     const handleFileUpload = async ({ prompt, file }) => {
         if (!firebaseUser) { setError("You must be logged in to use this feature."); return; }
+
+        // Check rate limit before proceeding
+        if (usageInfo && usageInfo.remaining <= 0) {
+            setError(`Analysis limit reached! You've used all ${usageInfo.limit} analyses. Resets in ${formatTimeUntilReset(usageInfo.resetsAt)}.`);
+            return;
+        }
+
         const historyContext = [...chatSession];
         const newUserMsg = { role: "user", text: prompt || "", fileName: file?.name };
         setChatSession((prev) => [...prev, newUserMsg]);
@@ -139,7 +194,24 @@ const Dashboard = () => {
             }
 
             const data = await res.json();
+
+            if (res.status === 429) {
+                // Rate limit hit — update usage and show error
+                setUsageInfo({
+                    limit: data.limit || 3,
+                    used: data.used || 3,
+                    remaining: 0,
+                    resetsAt: data.resetsAt || null,
+                });
+                throw new Error(data.message || "Analysis limit reached. Please try again later.");
+            }
+
             if (!res.ok) throw new Error(data.error || "Failed to generate response");
+
+            // Update usage info from response if available
+            if (data.usage) {
+                setUsageInfo(data.usage);
+            }
 
             // Store the raw response
             setChatSession((prev) => [...prev, { role: "ai", text: data.response }]);
@@ -151,6 +223,8 @@ const Dashboard = () => {
             setIsLoading(false);
         }
     };
+
+    const isRateLimited = usageInfo && usageInfo.remaining <= 0;
 
     return (
         <div className="relative min-h-screen bg-hero-bg overflow-x-hidden flex flex-col">
@@ -175,6 +249,72 @@ const Dashboard = () => {
                                     Upload your resume to get powerful AI-driven insights, ratings, and personalized feedback. Land your dream job effortlessly.
                                 </p>
                             </div>
+
+                            {/* ─── Usage / Rate Limit Banner ─── */}
+                            {!usageLoading && usageInfo && (
+                                <div className="w-full max-w-5xl opacity-0 animate-fade-up" style={{ animationDelay: "0.5s" }}>
+                                    {isRateLimited ? (
+                                        /* Limit reached — prominent warning */
+                                        <div className="relative overflow-hidden rounded-2xl border border-red-500/30 p-4 sm:p-5" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.04) 100%)", backdropFilter: "blur(20px)" }}>
+                                            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(600px circle at 30% 50%, rgba(239,68,68,0.08), transparent 70%)" }} />
+                                            <div className="relative flex items-center gap-3 sm:gap-4 flex-wrap">
+                                                <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(239,68,68,0.2)" }}>
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                                                    </svg>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-schibsted text-red-400 font-semibold text-sm">Analysis limit reached</p>
+                                                    <p className="font-schibsted text-white/50 text-xs mt-0.5">
+                                                        You've used all {usageInfo.limit} free analyses. Resets in <span className="text-red-400 font-medium">{formatTimeUntilReset(usageInfo.resetsAt)}</span>
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    {[...Array(usageInfo.limit)].map((_, i) => (
+                                                        <div key={i} className="w-3 h-3 rounded-full" style={{ background: "rgba(239,68,68,0.6)", boxShadow: "0 0 6px rgba(239,68,68,0.3)" }} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        /* Usage counter — subtle info bar */
+                                        <div className="relative overflow-hidden rounded-2xl border border-white/8 p-4 sm:p-5" style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(20px)" }}>
+                                            <div className="flex items-center justify-between gap-3 flex-wrap">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.06)" }}>
+                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-schibsted text-white/70 text-sm font-medium">
+                                                            <span className="text-white font-semibold">{usageInfo.remaining}</span> of {usageInfo.limit} analyses remaining
+                                                        </p>
+                                                        {usageInfo.resetsAt && (
+                                                            <p className="font-schibsted text-white/35 text-xs mt-0.5">
+                                                                Resets in {formatTimeUntilReset(usageInfo.resetsAt)}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    {[...Array(usageInfo.limit)].map((_, i) => (
+                                                        <div key={i} className="w-3 h-3 rounded-full transition-all duration-300" style={{
+                                                            background: i < usageInfo.used
+                                                                ? "rgba(239,68,68,0.6)"
+                                                                : "rgba(255,255,255,0.15)",
+                                                            boxShadow: i < usageInfo.used
+                                                                ? "0 0 6px rgba(239,68,68,0.3)"
+                                                                : "none",
+                                                        }} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Upload Zone */}
                             <div className="w-full flex justify-center pointer-events-auto flex-col items-center gap-4">
                                 {error && (
@@ -183,7 +323,7 @@ const Dashboard = () => {
                                         <span className="opacity-80 text-sm">{error}</span>
                                     </div>
                                 )}
-                                <FileUploadZone onUpload={handleFileUpload} isLoading={isLoading} onOpenHistory={() => setIsHistoryOpen(true)} />
+                                <FileUploadZone onUpload={handleFileUpload} isLoading={isLoading} isRateLimited={isRateLimited} onOpenHistory={() => setIsHistoryOpen(true)} />
                             </div>
                         </>
                     ) : (

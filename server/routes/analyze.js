@@ -1,13 +1,63 @@
 import express from "express";
 import authMiddleware from "../middleware/auth.js";
+import analysisRateLimit from "../middleware/rateLimit.js";
 import { generatePromptResponse } from "../services/geminiService.js";
 import Chat from "../models/Chat.js";
+import AnalysisUsage from "../models/AnalysisUsage.js";
 import multer from "multer";
 import pdfParse from "pdf-parse";
 import mammoth from "mammoth";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
+
+const ANALYSIS_LIMIT = 3;
+const WINDOW_MS = 5 * 24 * 60 * 60 * 1000; // 5 days
+
+// @route   GET /api/analyze/usage
+// @desc    Get the current user's analysis usage status
+// @access  Private
+router.get("/usage", authMiddleware, async (req, res) => {
+  try {
+    const uid = req.user.uid;
+    let usage = await AnalysisUsage.findOne({ firebaseUid: uid });
+
+    if (!usage) {
+      return res.json({
+        limit: ANALYSIS_LIMIT,
+        used: 0,
+        remaining: ANALYSIS_LIMIT,
+        resetsAt: null,
+      });
+    }
+
+    const now = new Date();
+    const windowElapsed = now.getTime() - new Date(usage.windowStart).getTime();
+
+    // If window has expired, report fresh usage
+    if (windowElapsed >= WINDOW_MS) {
+      return res.json({
+        limit: ANALYSIS_LIMIT,
+        used: 0,
+        remaining: ANALYSIS_LIMIT,
+        resetsAt: null,
+      });
+    }
+
+    const remaining = Math.max(0, ANALYSIS_LIMIT - usage.analysisCount);
+    const resetTime = new Date(new Date(usage.windowStart).getTime() + WINDOW_MS);
+
+    res.json({
+      limit: ANALYSIS_LIMIT,
+      used: usage.analysisCount,
+      remaining,
+      resetsAt: resetTime.toISOString(),
+    });
+  } catch (error) {
+    console.error("Error fetching usage:", error);
+    res.status(500).json({ error: "Failed to fetch usage info" });
+  }
+});
 
 // @route   POST /api/analyze/prompt
 // @desc    Generate AI response from a text prompt and save history
@@ -77,9 +127,9 @@ router.delete("/history/:id", authMiddleware, async (req, res) => {
 
 
 // @route   POST /api/analyze/upload
-// @desc    Upload resume, parse text, and get AI rating
+// @desc    Upload resume, parse text, and get AI rating (rate limited: 3 per 5 days)
 // @access  Private
-router.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
+router.post("/upload", authMiddleware, analysisRateLimit, upload.single("file"), async (req, res) => {
   try {
     const file = req.file;
     if (!file) {
@@ -165,7 +215,23 @@ ${parsedText}`;
       response: responseText,
     });
 
-    res.json({ response: responseText });
+    // ─── Increment analysis usage count after successful analysis ───
+    const usage = req.analysisUsage;
+    usage.analysisCount += 1;
+    await usage.save();
+
+    const remaining = Math.max(0, ANALYSIS_LIMIT - usage.analysisCount);
+    const resetTime = new Date(new Date(usage.windowStart).getTime() + WINDOW_MS);
+
+    res.json({
+      response: responseText,
+      usage: {
+        limit: ANALYSIS_LIMIT,
+        used: usage.analysisCount,
+        remaining,
+        resetsAt: resetTime.toISOString(),
+      },
+    });
   } catch (error) {
     console.error("Error analyzing uploaded file:", error);
     res.status(error?.statusCode || 500).json({

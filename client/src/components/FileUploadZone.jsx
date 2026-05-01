@@ -50,7 +50,7 @@ const ArrowUpIcon = () => (
 
 export { AttachIcon, ArrowUpIcon };
 
-export default function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
+export default function FileUploadZone({ onUpload, isLoading, isRateLimited = false, onOpenHistory }) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -80,7 +80,7 @@ export default function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
   const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); dragCounterRef.current = 0; const files = e.dataTransfer.files; if (files && files.length > 0) processFile(files[0]); };
   const handleFileSelect = (e) => { if (e.target.files && e.target.files.length > 0) processFile(e.target.files[0]); };
   const handleRemoveFile = () => { setUploadedFile(null); setUploadProgress(0); setIsUploaded(false); if (fileInputRef.current) fileInputRef.current.value = ""; };
-  const handleAnalyze = () => { if (uploadedFile && isUploaded && !isLoading) onUpload({ prompt: jobDescription, file: uploadedFile }); };
+  const handleAnalyze = () => { if (uploadedFile && isUploaded && !isLoading && !isRateLimited) onUpload({ prompt: jobDescription, file: uploadedFile }); };
   const formatFileSize = (bytes) => { if (bytes < 1024) return bytes + " B"; if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"; return (bytes / (1024 * 1024)).toFixed(1) + " MB"; };
 
   return (
@@ -136,9 +136,9 @@ export default function FileUploadZone({ onUpload, isLoading, onOpenHistory }) {
                 <SearchIcon /><span className="font-schibsted font-medium">History</span>
               </button>
             </div>
-            <button onClick={handleAnalyze} disabled={!uploadedFile || !isUploaded || isLoading} className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-schibsted font-semibold text-sm transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: uploadedFile && isUploaded ? "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 51%))" : "rgba(255,255,255,0.06)", color: uploadedFile && isUploaded ? "#fff" : "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: uploadedFile && isUploaded ? "0 4px 20px rgba(239,68,68,0.3)" : "none" }}>
-              {isLoading ? (<><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Analyzing...</>) : (<><ArrowUpIcon />Analyze Resume</>)}
+            <button onClick={handleAnalyze} disabled={!uploadedFile || !isUploaded || isLoading || isRateLimited} className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-schibsted font-semibold text-sm transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: isRateLimited ? "rgba(239,68,68,0.15)" : (uploadedFile && isUploaded ? "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 51%))" : "rgba(255,255,255,0.06)"), color: isRateLimited ? "rgba(239,68,68,0.6)" : (uploadedFile && isUploaded ? "#fff" : "rgba(255,255,255,0.4)"), border: isRateLimited ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(255,255,255,0.06)", boxShadow: uploadedFile && isUploaded && !isRateLimited ? "0 4px 20px rgba(239,68,68,0.3)" : "none" }}>
+              {isRateLimited ? (<><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>Limit Reached</>) : isLoading ? (<><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Analyzing...</>) : (<><ArrowUpIcon />Analyze Resume</>)}
             </button>
           </div>
         </div>
