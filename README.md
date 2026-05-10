@@ -19,7 +19,8 @@ Resume IQ is a smart, full-stack resume analysis platform powered by advanced AI
 | **Downloadable PDF Report** | Export a professionally formatted analysis report |
 | **Chat History** | All past analyses saved and accessible via the history panel |
 | **Google & Email Auth** | Secure authentication via Firebase |
-| **3D Interactive UI** | Spline 3D backgrounds with glassmorphism design |
+| **Usage Rate Limiting** | Restricts AI resume analysis to 3 requests per user every 5 days |
+| **Multiple File Formats** | Supports PDF, DOCX, and TXT files for resume upload |
 
 ---
 
@@ -28,7 +29,6 @@ Resume IQ is a smart, full-stack resume analysis platform powered by advanced AI
 ### Frontend
 - **React 19** + **Vite**
 - **Tailwind CSS** for styling
-- **Spline** for 3D backgrounds
 - **Firebase Auth** (Google + Email/Password)
 - **html2canvas + jsPDF** for PDF generation
 - **React Router** for navigation
@@ -40,7 +40,7 @@ Resume IQ is a smart, full-stack resume analysis platform powered by advanced AI
 - **MongoDB Atlas** via Mongoose
 - **Firebase Admin SDK** for token verification
 - **Multer** for file uploads
-- **pdf-parse** for PDF text extraction
+- **pdf-parse** & **mammoth** for PDF and DOCX text extraction
 
 ---
 
@@ -77,8 +77,8 @@ resume-analyzer/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/resume-analyzer.git
-cd resume-analyzer
+git clone https://github.com/Kaushik1014/AI-resume-analyzer.git
+cd AI-resume-analyzer
 ```
 
 ### 2. Setup the backend
@@ -169,7 +169,6 @@ This project is open source and available under the [MIT License](LICENSE).
 
 - [Google Gemini AI](https://ai.google.dev/)
 - [Firebase](https://firebase.google.com/)
-- [Spline](https://spline.design/)
 - [Tailwind CSS](https://tailwindcss.com/)
 
 ---
