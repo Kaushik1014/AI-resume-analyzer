@@ -196,14 +196,19 @@ const Dashboard = () => {
             const data = await res.json();
 
             if (res.status === 429) {
-                // Rate limit hit — update usage and show error
-                setUsageInfo({
-                    limit: data.limit || 3,
-                    used: data.used || 3,
-                    remaining: 0,
-                    resetsAt: data.resetsAt || null,
-                });
-                throw new Error(data.message || "Analysis limit reached. Please try again later.");
+                if (data.limit !== undefined) {
+                    // Custom user rate limit hit
+                    setUsageInfo({
+                        limit: data.limit || 3,
+                        used: data.used || 3,
+                        remaining: 0,
+                        resetsAt: data.resetsAt || null,
+                    });
+                    throw new Error(data.message || "Analysis limit reached. Please try again later.");
+                } else {
+                    // Upstream Gemini API rate limit or global rate limit
+                    throw new Error(data.error || "AI service is currently overwhelmed. Please try again later.");
+                }
             }
 
             if (!res.ok) throw new Error(data.error || "Failed to generate response");
