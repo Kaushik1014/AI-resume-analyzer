@@ -263,7 +263,7 @@ const HeroSection = () => {
               {/* Trust line */}
               <p className="hero-trust opacity-0 text-white/30 text-xs mt-2 flex items-center gap-2 justify-center">
                 <Sparkles className="w-3 h-3" />
-                Powered by Google Gemini AI · Over 10k careers accelerated
+                Powered by Groq · Over 10k careers accelerated
                 <Sparkles className="w-3 h-3" />
               </p>
             </div>

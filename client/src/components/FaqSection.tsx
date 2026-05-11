@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { ChevronDown, HelpCircle, Shield, FileType, Bot, Target } from "lucide-react";
 
 const faqs = [
-  { question: "How does Resume IQ actually score my document?", answer: "Our application uses Google Gemini AI to analyze your syntax, layout constraints, and keyword density. We prompt the AI to evaluate this against standard Applicant Tracking System (ATS) benchmarks to generate a precise viability score.", icon: Bot },
+  { question: "How does Resume IQ actually score my document?", answer: "Our application uses Groq-powered AI models to analyze your syntax, layout constraints, and keyword density. We prompt the AI to evaluate this against standard Applicant Tracking System (ATS) benchmarks to generate a precise viability score.", icon: Bot },
   { question: "Is my uploaded resume data completely secure?", answer: "Absolutely. We adhere to strict zero-retention policies. Your private contact information and career history are processed ephemerally on heavily encrypted instances—we do not store, log, or sell your documents.", icon: Shield },
   { question: "Which file formats are supported for analysis?", answer: "Resume IQ seamlessly parses both standard Adobe PDF (.pdf) and Microsoft Word (.docx) file formats, ensuring no structural formatting or text data is lost during the extraction process.", icon: FileType },
   { question: "What exactly is an ATS algorithm?", answer: "An Applicant Tracking System (ATS) is automated filtering software utilized by over 99% of Fortune 500 companies. It scans and scores resumes before a human recruiter ever sees them. Our goal is to optimize your document specifically to pass these robotic gates.", icon: HelpCircle },

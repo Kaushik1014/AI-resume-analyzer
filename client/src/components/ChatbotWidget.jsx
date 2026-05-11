@@ -1,5 +1,37 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import { formatAIReply } from "@/utils/formatAIReply";
+import ATSGraph from "@/components/ATSGraph";
+import SectionScores from "@/components/SectionScores";
+import MissingKeywords from "@/components/MissingKeywords";
+import ToneAnalysis from "@/components/ToneAnalysis";
+import FormattingTips from "@/components/FormattingTips";
+import RoleSuggestions from "@/components/RoleSuggestions";
+
+function parseAIResponse(raw) {
+  if (!raw || typeof raw !== "string") return null;
+  let text = raw.trim();
+
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+  if (fenceMatch) text = fenceMatch[1].trim();
+
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === "object" && parsed.atsScore !== undefined) return parsed;
+  } catch (e) {}
+
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    try {
+      const substr = text.substring(firstBrace, lastBrace + 1);
+      const parsed = JSON.parse(substr);
+      if (parsed && typeof parsed === "object" && parsed.atsScore !== undefined) return parsed;
+    } catch (e) {}
+  }
+
+  return null;
+}
 
 const ArrowUpIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -88,7 +120,66 @@ export default function ChatbotWidget({ firebaseUser }) {
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[85%] px-4 py-3 rounded-2xl font-schibsted text-sm leading-relaxed ${msg.role === "user" ? "rounded-br-md" : "rounded-bl-md"}`}
                   style={{ background: msg.role === "user" ? "linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 72%, 51%))" : "rgba(255,255,255,0.06)", color: msg.role === "user" ? "#000" : "rgba(255,255,255,0.85)", border: msg.role === "user" ? "none" : "1px solid rgba(255,255,255,0.06)" }}>
-                  {msg.role === "ai" ? (<div className="[&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:pl-4 [&>ol]:mb-2 [&>li]:mb-0.5 [&>strong]:text-white"><ReactMarkdown>{msg.text}</ReactMarkdown></div>) : (<p>{msg.text}</p>)}
+                  {msg.role === "ai" ? (
+                    <div className="[&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:pl-4 [&>ol]:mb-2 [&>li]:mb-0.5 [&>strong]:text-white [&>pre]:my-2 [&>pre]:overflow-auto [&>pre]:rounded-xl [&>pre]:border [&>pre]:border-white/10 [&>pre]:bg-black/40 [&>pre]:p-3 [&>code]:break-words">
+                      {(() => {
+                        const parsed = parseAIResponse(msg.text);
+                        if (parsed) {
+                          return (
+                            <div className="space-y-3">
+                              {(parsed.executiveSummary || parsed.roleSpecificFeedback?.detectedRole) && (
+                                <div className="grid grid-cols-1 gap-2">
+                                  {parsed.executiveSummary && (
+                                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                                      <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Executive summary</p>
+                                      <p className="text-white/85 text-xs leading-relaxed">{parsed.executiveSummary}</p>
+                                    </div>
+                                  )}
+                                  {parsed.roleSpecificFeedback?.detectedRole && (
+                                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                                      <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Detected role</p>
+                                      <p className="text-white text-sm font-semibold">{parsed.roleSpecificFeedback.detectedRole}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              <div className="rounded-xl border border-white/10 bg-black/30 p-2">
+                                <ATSGraph score={parsed.atsScore} />
+                              </div>
+                              {parsed.sectionScores && <SectionScores scores={parsed.sectionScores} />}
+                              {parsed.roleSpecificFeedback && <RoleSuggestions roleData={parsed.roleSpecificFeedback} />}
+                              {parsed.missingKeywords && <MissingKeywords keywords={parsed.missingKeywords} />}
+                              {parsed.toneCheck && <ToneAnalysis toneData={parsed.toneCheck} />}
+                              {parsed.formattingTips && <FormattingTips formattingData={parsed.formattingTips} />}
+                              {parsed.feedback && <ReactMarkdown>{parsed.feedback}</ReactMarkdown>}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <ReactMarkdown
+                            components={{
+                              code({ inline, children, ...props }) {
+                                if (inline) {
+                                  return (
+                                    <code className="px-1 py-0.5 rounded bg-black/40 border border-white/10" {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                }
+                                return <code {...props}>{children}</code>;
+                              },
+                            }}
+                          >
+                            {formatAIReply(msg.text)}
+                          </ReactMarkdown>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <p>{msg.text}</p>
+                  )}
                 </div>
               </div>
             ))}

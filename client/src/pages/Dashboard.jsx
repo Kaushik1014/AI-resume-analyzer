@@ -15,6 +15,7 @@ import FileUploadZone, { AttachIcon } from "@/components/FileUploadZone";
 import ChatbotWidget from "@/components/ChatbotWidget";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { formatAIReply } from "@/utils/formatAIReply";
 
 /**
  * Robustly extract JSON from an AI response string.
@@ -119,35 +120,38 @@ const Dashboard = () => {
             // Wait a frame for the browser to lay it out on-screen
             await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-            const canvas = await html2canvas(pdfReportRef.current, { 
-                scale: 2, 
-                useCORS: true, 
-                backgroundColor: '#ffffff',
-                logging: false 
-            });
-            
-            // Immediately hide it again
-            wrapper.style.cssText = origStyle;
-
-            // Use JPEG to reduce file size dramatically
-            const imgData = canvas.toDataURL('image/jpeg', 0.92);
+            const root = pdfReportRef.current;
+            const blocks = Array.from(root.querySelectorAll('[data-pdf-block="true"]'));
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
+            const margin = 10; // mm
+            const contentWidth = pdfWidth - margin * 2;
+            let cursorY = margin;
 
-            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfHeight;
+            for (let i = 0; i < blocks.length; i++) {
+                const el = blocks[i];
+                const canvas = await html2canvas(el, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                });
 
-            while (heightLeft > 0) {
-                position -= pdfHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pdfHeight;
+                const imgData = canvas.toDataURL('image/jpeg', 0.92);
+                const imgHeight = (canvas.height * contentWidth) / canvas.width;
+
+                if (cursorY + imgHeight > pdfHeight - margin) {
+                    pdf.addPage();
+                    cursorY = margin;
+                }
+
+                pdf.addImage(imgData, 'JPEG', margin, cursorY, contentWidth, imgHeight);
+                cursorY += imgHeight + 3; // small gap between blocks
             }
+
+            // Immediately hide it again
+            wrapper.style.cssText = origStyle;
 
             pdf.save('Resume_Analysis_Report.pdf');
         } catch (err) { 
@@ -206,7 +210,7 @@ const Dashboard = () => {
                     });
                     throw new Error(data.message || "Analysis limit reached. Please try again later.");
                 } else {
-                    // Upstream Gemini API rate limit or global rate limit
+                    // Upstream AI provider rate limit or global rate limit
                     throw new Error(data.error || "AI service is currently overwhelmed. Please try again later.");
                 }
             }
@@ -352,6 +356,33 @@ const Dashboard = () => {
                                                     }
                                                     return (
                                                         <>
+                                                            {/* Summary blocks */}
+                                                            {(parsedData.executiveSummary || parsedData.roleSpecificFeedback?.detectedRole) && (
+                                                                <div className="mb-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                                    {parsedData.executiveSummary && (
+                                                                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                                            <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Executive summary</p>
+                                                                            <p className="text-white/85 text-sm leading-relaxed">{parsedData.executiveSummary}</p>
+                                                                        </div>
+                                                                    )}
+                                                                    {parsedData.roleSpecificFeedback?.detectedRole && (
+                                                                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                                                            <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Detected role</p>
+                                                                            <p className="text-white text-base font-semibold">{parsedData.roleSpecificFeedback.detectedRole}</p>
+                                                                            {Array.isArray(parsedData.roleSpecificFeedback?.suggestions) && parsedData.roleSpecificFeedback.suggestions.length > 0 && (
+                                                                                <div className="mt-3">
+                                                                                    <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Suggestions</p>
+                                                                                    <ul className="list-disc pl-5 text-white/80 text-sm space-y-1">
+                                                                                        {parsedData.roleSpecificFeedback.suggestions.map((s, i) => (
+                                                                                            <li key={i}>{s}</li>
+                                                                                        ))}
+                                                                                    </ul>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
                                                             <ATSGraph score={parsedData.atsScore} />
                                                             {parsedData.sectionScores && <SectionScores scores={parsedData.sectionScores} />}
                                                             {parsedData.roleSpecificFeedback && <RoleSuggestions roleData={parsedData.roleSpecificFeedback} />}
@@ -366,7 +397,7 @@ const Dashboard = () => {
                                                         </>
                                                     );
                                                 }
-                                                return <ReactMarkdown>{msg.text}</ReactMarkdown>;
+                                                return <ReactMarkdown>{formatAIReply(msg.text)}</ReactMarkdown>;
                                             })()}
                                         </div>
                                     )}

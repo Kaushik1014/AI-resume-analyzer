@@ -7,6 +7,7 @@ import MissingKeywords from "@/components/MissingKeywords";
 import ToneAnalysis from "@/components/ToneAnalysis";
 import FormattingTips from "@/components/FormattingTips";
 import RoleSuggestions from "@/components/RoleSuggestions";
+import { formatAIReply } from "@/utils/formatAIReply";
 // ─── SVG Icons ───
 const CloseIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -169,6 +170,32 @@ export default function HistoryPanel({ isOpen, onClose }) {
                           if (parsedData && parsedData.atsScore !== undefined) {
                             return (
                               <>
+                                {(parsedData.executiveSummary || parsedData.roleSpecificFeedback?.detectedRole) && (
+                                  <div className="mb-4 grid grid-cols-1 gap-3">
+                                    {parsedData.executiveSummary && (
+                                      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                        <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Executive summary</p>
+                                        <p className="text-white/85 text-sm leading-relaxed">{parsedData.executiveSummary}</p>
+                                      </div>
+                                    )}
+                                    {parsedData.roleSpecificFeedback?.detectedRole && (
+                                      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                        <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Detected role</p>
+                                        <p className="text-white text-base font-semibold">{parsedData.roleSpecificFeedback.detectedRole}</p>
+                                        {Array.isArray(parsedData.roleSpecificFeedback?.suggestions) && parsedData.roleSpecificFeedback.suggestions.length > 0 && (
+                                          <div className="mt-3">
+                                            <p className="text-xs uppercase tracking-wider text-white/40 mb-2">Suggestions</p>
+                                            <ul className="list-disc pl-5 text-white/80 text-sm space-y-1">
+                                              {parsedData.roleSpecificFeedback.suggestions.map((s, i) => (
+                                                <li key={i}>{s}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                                 <ATSGraph score={parsedData.atsScore} />
                                 {parsedData.sectionScores && <SectionScores scores={parsedData.sectionScores} />}
                                 {parsedData.roleSpecificFeedback && <RoleSuggestions roleData={parsedData.roleSpecificFeedback} />}
@@ -179,7 +206,7 @@ export default function HistoryPanel({ isOpen, onClose }) {
                               </>
                             );
                           }
-                          return <ReactMarkdown>{chat.response}</ReactMarkdown>;
+                          return <ReactMarkdown>{formatAIReply(chat.response)}</ReactMarkdown>;
                         })()}
                       </div>
                     </div>

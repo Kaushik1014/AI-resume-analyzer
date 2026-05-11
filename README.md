@@ -36,7 +36,7 @@ Resume IQ is a smart, full-stack resume analysis platform powered by advanced AI
 
 ### Backend
 - **Node.js** + **Express**
-- **Google Gemini AI** (gemini-2.5-flash)
+- **Groq AI** (Chat Completions API)
 - **MongoDB Atlas** via Mongoose
 - **Firebase Admin SDK** for token verification
 - **Multer** for file uploads
@@ -61,7 +61,7 @@ resume-analyzer/
 │   ├── middleware/           # Auth middleware
 │   ├── models/              # Mongoose schemas
 │   ├── routes/              # API routes (analyze, auth)
-│   ├── services/            # Gemini AI service
+│   ├── services/            # Groq AI service
 │   └── .env                 # Backend environment variables
 ```
 
@@ -73,7 +73,7 @@ resume-analyzer/
 - Node.js v18+
 - MongoDB Atlas account
 - Firebase project (Auth enabled)
-- Google Gemini API key
+- Groq API key
 
 ### 1. Clone the repository
 ```bash
@@ -91,7 +91,7 @@ Create `server/.env`:
 ```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
-GEMINI_API_KEY=your_gemini_api_key
+GROQ_API_KEY=your_groq_api_key
 FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account",...}
 ```
 
@@ -167,7 +167,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgements
 
-- [Google Gemini AI](https://ai.google.dev/)
+- [Groq](https://groq.com/)
 - [Firebase](https://firebase.google.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 

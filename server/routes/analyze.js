@@ -1,7 +1,7 @@
 import express from "express";
 import authMiddleware from "../middleware/auth.js";
 import analysisRateLimit from "../middleware/rateLimit.js";
-import { generatePromptResponse } from "../services/geminiService.js";
+import { generatePromptResponse } from "../services/groqService.js";
 import Chat from "../models/Chat.js";
 import AnalysisUsage from "../models/AnalysisUsage.js";
 import multer from "multer";
@@ -13,6 +13,36 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const ANALYSIS_LIMIT = 3;
 const WINDOW_MS = 5 * 24 * 60 * 60 * 1000; // 5 days
+
+const normalizeAiJson = (raw) => {
+  if (!raw || typeof raw !== "string") return raw;
+  let text = raw.trim();
+
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/i);
+  if (fenceMatch) text = fenceMatch[1].trim();
+
+  const tryParse = (s) => {
+    try {
+      return JSON.parse(s);
+    } catch {
+      return null;
+    }
+  };
+
+  let obj = tryParse(text);
+  if (!obj) {
+    const firstBrace = text.indexOf("{");
+    const lastBrace = text.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      obj = tryParse(text.slice(firstBrace, lastBrace + 1));
+    }
+  }
+
+  if (obj && typeof obj === "object" && obj.atsScore !== undefined) {
+    return JSON.stringify(obj);
+  }
+  return raw;
+};
 
 // @route   GET /api/analyze/usage
 // @desc    Get the current user's analysis usage status
@@ -70,7 +100,7 @@ router.post("/prompt", authMiddleware, async (req, res) => {
       return res.status(400).json({ error: "No prompt provided" });
     }
 
-    const responseText = await generatePromptResponse(prompt, historyContext);
+    const responseText = normalizeAiJson(await generatePromptResponse(prompt, historyContext));
 
     // Only save to history when explicitly requested (resume analysis saves, chatbot skips)
     if (saveHistory !== false) {
@@ -164,6 +194,12 @@ router.post("/upload", authMiddleware, analysisRateLimit, upload.single("file"),
       return res.status(400).json({ error: "No readable text found in the uploaded file." });
     }
 
+    // Keep prompts bounded to avoid truncated model output.
+    const MAX_RESUME_CHARS = 12000;
+    if (parsedText.length > MAX_RESUME_CHARS) {
+      parsedText = `${parsedText.slice(0, MAX_RESUME_CHARS)}\n\n[TRUNCATED]`;
+    }
+
     const { prompt, historyContext } = req.body;
     let history = [];
     if (historyContext) {
@@ -198,13 +234,15 @@ Use this exact structure:
     "bulletStructure": "<feedback assessing bullet point consistency, length, and formatting>",
     "datesFormat": "<feedback assessing chronological consistency and date formatting e.g. MM/YYYY>"
   },
-  "feedback": "<detailed constructive feedback in markdown format focusing on structure, keywords, and impact>"
+  "feedback": "<markdown feedback. Keep it concise: 8-12 bullets max.>"
 }
 
 Resume Content:
 ${parsedText}`;
 
-    const responseText = await generatePromptResponse(finalPrompt, history);
+    const responseText = normalizeAiJson(
+      await generatePromptResponse(finalPrompt, history, { jsonMode: true, maxTokens: 4500 })
+    );
 
     // Save to history using original prompt or a generic string if empty
     const savedPrompt = prompt && prompt.trim() ? prompt : `Resume Evaluation (${file.originalname})`;

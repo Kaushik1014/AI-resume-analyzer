@@ -22,7 +22,7 @@ const steps = [
     id: "02",
     title: "AI Analysis",
     description:
-      "Our application sends your document directly to Google Gemini AI to analyze your syntax, grammar, and career experience accurately.",
+      "Our application sends your document to Groq-powered AI models to analyze your syntax, grammar, and career experience accurately.",
     icon: Brain,
   },
   {
