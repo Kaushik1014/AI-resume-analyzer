@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { LogIn, UserPlus, LogOut } from "lucide-react";
@@ -13,6 +13,7 @@ const navLinks = [
 const Navbar = () => {
   const { firebaseUser, dbUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const rafRef = useRef(null);
@@ -38,6 +39,21 @@ const Navbar = () => {
     };
   }, [handleScroll]);
 
+  // After navigating to /#section (e.g. from /dashboard), scroll once the home page is mounted.
+  useEffect(() => {
+    if (location.pathname !== "/") return;
+    const hash = location.hash?.replace("#", "");
+    if (!hash) return;
+    const scroll = () => {
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    const t = window.setTimeout(() => {
+      requestAnimationFrame(() => requestAnimationFrame(scroll));
+    }, 50);
+    return () => window.clearTimeout(t);
+  }, [location.pathname, location.hash]);
+
   const handleLogout = async () => {
     await logout();
     navigate("/");
@@ -46,9 +62,13 @@ const Navbar = () => {
   const scrollToSection = (href: string) => {
     setMobileOpen(false);
     const id = href.replace("#", "");
+    if (location.pathname !== "/") {
+      navigate({ pathname: "/", hash: href });
+      return;
+    }
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
